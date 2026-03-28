@@ -5,27 +5,27 @@ export function Navbar() {
   const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-black/[0.08]">
-      <div className="max-w-5xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[52px]">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-nav">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-[#0071e3] flex items-center justify-center shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#4d9fff] to-[#1a6fdf] flex items-center justify-center shadow-lg shadow-blue-500/30">
               <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
-                <path d="M10 2L3 7v11h4v-6h6v6h4V7L10 2z" fill="white" fillOpacity="0.9"/>
+                <path d="M10 2.5L3.5 7.5v10h4v-6h5v6h4V7.5L10 2.5z" fill="white" fillOpacity="0.95"/>
               </svg>
             </div>
-            <span className="font-semibold text-[17px] text-[#1d1d1f] tracking-[-0.01em]">CardMaker</span>
+            <span className="font-semibold text-[16px] text-white/90 tracking-[-0.01em]">CardMaker</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-7">
-            <Link href="/generator" className="text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
+            <Link href="/generator" className="text-[14px] text-white/50 hover:text-white/90 transition-colors">
               Генератор
             </Link>
-            <Link href="/dashboard" className="text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
+            <Link href="/dashboard" className="text-[14px] text-white/50 hover:text-white/90 transition-colors">
               Партнёрка
             </Link>
             {user?.isAdmin && (
-              <Link href="/admin" className="text-[14px] text-[#0071e3] hover:text-[#0077ed] transition-colors">
+              <Link href="/admin" className="text-[14px] text-[#4d9fff]/80 hover:text-[#4d9fff] transition-colors">
                 Админ
               </Link>
             )}
@@ -34,19 +34,15 @@ export function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <Link href="/dashboard">
-                <button className="text-[14px] font-medium text-[#0071e3] hover:text-[#0077ed] transition-colors">
-                  Кабинет
-                </button>
+                <button className="text-[14px] font-medium text-white/60 hover:text-white/90 transition-colors">Кабинет</button>
               </Link>
             ) : (
               <Link href="/auth">
-                <button className="text-[14px] font-medium text-[#0071e3] hover:text-[#0077ed] transition-colors">
-                  Войти
-                </button>
+                <button className="text-[14px] font-medium text-white/60 hover:text-white/90 transition-colors">Войти</button>
               </Link>
             )}
             <Link href="/generator">
-              <button className="px-4 py-1.5 rounded-full bg-[#0071e3] text-white text-[14px] font-medium hover:bg-[#0077ed] transition-colors shadow-sm">
+              <button className="px-4 py-1.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium hover:bg-[#6aaeff] transition-colors glow-blue">
                 Создать карточку
               </button>
             </Link>

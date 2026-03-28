@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -26,36 +26,35 @@
 }
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 11%;
+  --background: 230 25% 4%;
+  --foreground: 0 0% 98%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 11%;
+  --card: 230 20% 8%;
+  --card-foreground: 0 0% 98%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 11%;
+  --popover: 230 20% 8%;
+  --popover-foreground: 0 0% 98%;
 
-  /* Apple Blue #0071e3 */
-  --primary: 211 100% 44%;
+  --primary: 210 100% 56%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 11%;
+  --secondary: 230 20% 12%;
+  --secondary-foreground: 0 0% 80%;
 
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 43%;
+  --muted: 230 20% 14%;
+  --muted-foreground: 230 10% 55%;
 
-  --accent: 0 0% 96%;
-  --accent-foreground: 0 0% 11%;
+  --accent: 230 20% 14%;
+  --accent-foreground: 0 0% 98%;
 
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 82%;
-  --input: 0 0% 82%;
-  --ring: 211 100% 44%;
+  --border: 230 20% 16%;
+  --input: 230 20% 14%;
+  --ring: 210 100% 56%;
 
-  --radius: 0.75rem;
+  --radius: 0.875rem;
 }
 
 @layer base {
@@ -63,50 +62,59 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/15 selection:text-primary;
+    @apply bg-background text-foreground antialiased font-sans;
+    background-color: #080810;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
   }
 }
 
-.glass-nav {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+/* Glass card */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
 }
 
-.text-gradient {
-  background: linear-gradient(135deg, #0071e3 0%, #42a5f5 100%);
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Nav glass */
+.glass-nav {
+  background: rgba(8, 8, 16, 0.75);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Blue glow text gradient */
+.text-glow {
+  background: linear-gradient(135deg, #7eb8ff 0%, #4d9fff 40%, #a8d4ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.apple-card {
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.09);
-  border-radius: 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06);
+/* Subtle glow on elements */
+.glow-blue {
+  box-shadow: 0 0 30px rgba(77, 159, 255, 0.3), 0 0 60px rgba(77, 159, 255, 0.1);
 }
 
-.apple-card-hover {
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
-}
-.apple-card-hover:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 0 1px rgba(0,0,0,0.06);
-  transform: translateY(-2px);
+/* Light ray background animation */
+@keyframes ray-pulse {
+  0%, 100% { opacity: 0.6; transform: scaleX(1); }
+  50%       { opacity: 1;   transform: scaleX(1.04); }
 }
 
-.animate-float {
-  animation: float 8s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-14px); }
-  100% { transform: translateY(0px); }
-}
+.ray { animation: ray-pulse 6s ease-in-out infinite; }
+.ray-2 { animation: ray-pulse 8s ease-in-out 1s infinite; }
+.ray-3 { animation: ray-pulse 7s ease-in-out 2s infinite; }
