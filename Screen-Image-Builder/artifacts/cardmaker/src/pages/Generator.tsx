@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Star, ArrowLeft, Upload, ImageIcon, X, Download, Loader2, Globe, ShoppingBag, Package, Sparkles, CheckCircle2 } from "lucide-react";
+import { Star, ArrowLeft, Upload, ImageIcon, X, Download, Loader2, Globe, ShoppingBag, Package, Sparkles, CheckCircle2, Images } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { api, isLoggedIn, type GenerateResult } from "@/lib/api";
@@ -10,6 +10,14 @@ const MARKETPLACES = [
   { id: "wildberries", label: "Wildberries", icon: ShoppingBag, color: "text-purple-600" },
   { id: "ozon", label: "Ozon", icon: ShoppingBag, color: "text-blue-600" },
   { id: "yandex", label: "Яндекс Маркет", icon: Package, color: "text-yellow-500" },
+];
+
+const INFOGRAPHIC_LABELS = [
+  "Размеры",
+  "Преимущества",
+  "Материалы",
+  "Применение",
+  "Рейтинг",
 ];
 
 type TabId = "data" | "result";
@@ -24,8 +32,10 @@ export default function Generator() {
   const [productName, setProductName] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [imageCount, setImageCount] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [error, setError] = useState("");
   const [, navigate] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +75,7 @@ export default function Generator() {
     if (!uploadedImage || !imageBase64) return;
     setIsGenerating(true);
     setError("");
+    setActiveImageIndex(0);
     try {
       const res = await api.generate.create({
         imageBase64,
@@ -72,6 +83,7 @@ export default function Generator() {
         marketplace,
         productName,
         description,
+        imageCount,
       });
       setResult(res);
       setActiveTab("result");
@@ -84,15 +96,7 @@ export default function Generator() {
 
   const selectedMarketplace = MARKETPLACES.find(m => m.id === marketplace)!;
 
-  let resultData: { name?: string; description?: string; characteristics?: string; category?: string } = {};
-  if (result) {
-    resultData = {
-      name: result.productName,
-      description: result.description,
-      characteristics: result.characteristics,
-      category: result.category,
-    };
-  }
+  const resultImages = result?.imageUrls ?? (result?.imageUrl ? [result.imageUrl] : []);
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] flex flex-col">
@@ -284,6 +288,33 @@ export default function Generator() {
                   </div>
                 </div>
 
+                {/* Image Count */}
+                <div className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Images className="w-5 h-5 text-primary" />
+                    <h2 className="font-semibold">Количество изображений</h2>
+                  </div>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setImageCount(n)}
+                        className={cn(
+                          "flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-150",
+                          imageCount === n
+                            ? "bg-primary text-white border-primary shadow-sm"
+                            : "border-border/50 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                        )}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Каждое изображение — уникальный вариант инфографики: {Array.from({ length: imageCount }, (_, i) => INFOGRAPHIC_LABELS[i]).join(", ")}
+                  </p>
+                </div>
+
                 {error && (
                   <div className="bg-destructive/10 border border-destructive/20 rounded-2xl px-4 py-3 text-sm text-destructive">
                     {error}
@@ -303,12 +334,12 @@ export default function Generator() {
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Создаю карточку... (30-60 сек)
+                      Создаю {imageCount} {imageCount === 1 ? "карточку" : imageCount < 5 ? "карточки" : "карточек"}... (может занять до минуты)
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Создать карточку
+                      Создать {imageCount === 1 ? "карточку" : `${imageCount} карточки`}
                     </>
                   )}
                 </button>
@@ -322,27 +353,41 @@ export default function Generator() {
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
                     <h2 className="font-semibold">Название</h2>
                   </div>
-                  <p className="text-sm font-medium">{resultData.name}</p>
+                  <p className="text-sm font-medium">{result.productName}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
                   <h2 className="font-semibold mb-3">Описание</h2>
-                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{resultData.description}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{result.description}</p>
                 </div>
 
-                {resultData.characteristics && (
+                {result.characteristics && (
                   <div className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
                     <h2 className="font-semibold mb-3">Характеристики</h2>
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{resultData.characteristics}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{result.characteristics}</p>
                   </div>
                 )}
 
-                {resultData.category && (
+                {result.keywords && (
+                  <div className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
+                    <h2 className="font-semibold mb-3">Ключевые слова</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{result.keywords}</p>
+                  </div>
+                )}
+
+                {result.category && (
                   <div className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
                     <h2 className="font-semibold mb-2">Категория</h2>
                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                      {resultData.category}
+                      {result.category}
                     </span>
+                  </div>
+                )}
+
+                {result.seoTips && (
+                  <div className="bg-white rounded-2xl border border-border/40 p-5 shadow-sm">
+                    <h2 className="font-semibold mb-3">SEO-советы</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{result.seoTips}</p>
                   </div>
                 )}
 
@@ -361,7 +406,10 @@ export default function Generator() {
             <div className="bg-white rounded-2xl border border-border/40 shadow-sm sticky top-24">
               <div className="p-5 border-b border-border/30 flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-primary" />
-                <h2 className="font-semibold">Изображение карточки</h2>
+                <h2 className="font-semibold">Изображения карточек</h2>
+                {resultImages.length > 1 && (
+                  <span className="ml-auto text-xs text-muted-foreground font-medium">{activeImageIndex + 1} / {resultImages.length}</span>
+                )}
               </div>
               <div className="p-5">
                 <AnimatePresence mode="wait">
@@ -373,25 +421,68 @@ export default function Generator() {
                         <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
                       </div>
                       <div className="text-center">
-                        <p className="font-semibold">Создаю карточку...</p>
-                        <p className="text-xs text-muted-foreground mt-1">AI анализирует фото и генерирует карточку</p>
+                        <p className="font-semibold">Создаю карточки...</p>
+                        <p className="text-xs text-muted-foreground mt-1">Генерирую {imageCount} вариант{imageCount === 1 ? "" : imageCount < 5 ? "а" : "ов"} с инфографикой</p>
                       </div>
                     </motion.div>
-                  ) : result?.imageUrl ? (
+                  ) : resultImages.length > 0 ? (
                     <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col gap-4">
                       <div className="rounded-xl overflow-hidden border border-border/30 bg-secondary/20">
-                        <img src={result.imageUrl} alt="Результат" className="w-full object-contain max-h-72" />
+                        <img src={resultImages[activeImageIndex]} alt={`Вариант ${activeImageIndex + 1}`} className="w-full object-contain max-h-72" />
                       </div>
-                      <a
-                        href={result.imageUrl}
-                        download={`cardmaker-${result.id}.png`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
-                      >
-                        <Download className="w-4 h-4" />
-                        Скачать карточку
-                      </a>
+
+                      {resultImages.length > 1 && (
+                        <div className="flex gap-2">
+                          {resultImages.map((url, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setActiveImageIndex(i)}
+                              className={cn(
+                                "flex-1 rounded-lg overflow-hidden border-2 transition-all duration-150 aspect-square",
+                                i === activeImageIndex ? "border-primary shadow-sm" : "border-border/30 hover:border-primary/50"
+                              )}
+                            >
+                              <img src={url} alt={`Вариант ${i + 1}`} className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-2">
+                        {resultImages.length > 1 && (
+                          <p className="text-xs text-center text-muted-foreground font-medium">
+                            {INFOGRAPHIC_LABELS[activeImageIndex]} — вариант {activeImageIndex + 1}
+                          </p>
+                        )}
+                        <a
+                          href={resultImages[activeImageIndex]}
+                          download={`cardmaker-${result?.id}-v${activeImageIndex + 1}.png`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                          Скачать{resultImages.length > 1 ? ` вариант ${activeImageIndex + 1}` : " карточку"}
+                        </a>
+                        {resultImages.length > 1 && (
+                          <button
+                            onClick={async () => {
+                              for (let i = 0; i < resultImages.length; i++) {
+                                const a = document.createElement("a");
+                                a.href = resultImages[i];
+                                a.download = `cardmaker-${result?.id}-v${i + 1}.png`;
+                                a.target = "_blank";
+                                a.click();
+                                await new Promise(r => setTimeout(r, 300));
+                              }
+                            }}
+                            className="w-full py-2.5 rounded-xl border border-border/50 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors flex items-center justify-center gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            Скачать все ({resultImages.length})
+                          </button>
+                        )}
+                      </div>
                     </motion.div>
                   ) : (
                     <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}

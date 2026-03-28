@@ -156,10 +156,24 @@ async function analyzeImagesWithOpenAI(
   };
 }
 
+const INFOGRAPHIC_VARIANTS = [
+  (name: string, mp: string) =>
+    `E-commerce product photo for ${mp}. Product: ${name}. Natural lifestyle environment, real-world setting matching the product category. Overlay infographic: dimensions and size chart with arrows and labels, measurement callouts. Bold typography, clean layout. High quality, photorealistic.`,
+  (name: string, mp: string) =>
+    `E-commerce product photo for ${mp}. Product: ${name}. Natural lifestyle background, product in use in everyday setting. Overlay infographic: key benefits and features as icon badges with short text, highlight boxes showing top 3 advantages. Vivid colors, modern design. High quality, photorealistic.`,
+  (name: string, mp: string) =>
+    `E-commerce product photo for ${mp}. Product: ${name}. Aesthetic lifestyle scene, product surrounded by complementary objects in natural environment. Overlay infographic: materials and composition details, texture close-ups with callout lines, quality icons. Premium feel, high quality, photorealistic.`,
+  (name: string, mp: string) =>
+    `E-commerce product photo for ${mp}. Product: ${name}. Dynamic lifestyle context, product shown in action or in use. Overlay infographic: numbered step-by-step usage instructions, how-to icons, application scenarios. Clear and modern layout. High quality, photorealistic.`,
+  (name: string, mp: string) =>
+    `E-commerce product photo for ${mp}. Product: ${name}. Stylish natural environment matching product mood. Overlay infographic: customer rating stars, key statistics (e.g. "10 000+ reviews", "4.9★"), trust badges, warranty or guarantee icons. Confident and premium design. High quality, photorealistic.`,
+];
+
 async function generateCardImageWithKieAI(
   imageBase64: string,
   productName: string,
   marketplace: string,
+  variantIndex: number = 0,
 ): Promise<string | null> {
   if (!KIE_AI_API_KEY) return null;
 
@@ -171,7 +185,8 @@ async function generateCardImageWithKieAI(
       universal: "marketplace",
     };
     const marketplaceName = marketplaceNames[marketplace] ?? "marketplace";
-    const prompt = `Professional product card for ${marketplaceName}. Clean white background, studio lighting. Product: ${productName}. Add infographic elements: key features icons, quality marks. Modern e-commerce design, high quality, photorealistic.`;
+    const idx = variantIndex % INFOGRAPHIC_VARIANTS.length;
+    const prompt = INFOGRAPHIC_VARIANTS[idx](productName, marketplaceName);
 
     const response = await fetch("https://api.kie.ai/v1/image/generate", {
       method: "POST",
@@ -202,9 +217,22 @@ async function generateCardImageWithKieAI(
   }
 }
 
+async function generateMultipleCardImages(
+  imageBase64: string,
+  productName: string,
+  marketplace: string,
+  count: number,
+): Promise<string[]> {
+  const tasks = Array.from({ length: count }, (_, i) =>
+    generateCardImageWithKieAI(imageBase64, productName, marketplace, i),
+  );
+  const results = await Promise.all(tasks);
+  return results.filter((url): url is string => url !== null);
+}
+
 router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
   try {
-    const { imagesBase64, imageBase64, price, marketplace, productName, description } = req.body;
+    const { imagesBase64, imageBase64, price, marketplace, productName, description, imageCount } = req.body;
     const userId = req.userId!;
 
     // Support both single (legacy) and multiple images
@@ -223,6 +251,8 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       res.status(400).json({ error: "Максимум 5 изображений" });
       return;
     }
+
+    const count = Math.min(Math.max(Number(imageCount) || 1, 1), 5);
 
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
     if (!user || user.bonusGenerations <= 0) {
@@ -243,12 +273,15 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       .where(eq(usersTable.id, userId));
 
     const aiResult = await analyzeImagesWithOpenAI(images, price ?? "", marketplace, productName, description);
-    // Use first image for card generation
-    const imageUrl = await generateCardImageWithKieAI(images[0], aiResult.name, marketplace);
+
+    // Generate multiple card images in parallel, each with a different infographic variant
+    const imageUrls = await generateMultipleCardImages(images[0], aiResult.name, marketplace, count);
+
+    const outputImageUrl = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
 
     await db.update(generationsTable).set({
       outputText: aiResult.fullText,
-      outputImageUrl: imageUrl,
+      outputImageUrl,
       productName: aiResult.name,
       status: "done",
     }).where(eq(generationsTable.id, gen.id));
@@ -256,7 +289,8 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
     res.json({
       id: gen.id,
       description: aiResult.description,
-      imageUrl: imageUrl ?? `data:image/jpeg;base64,${images[0]}`,
+      imageUrl: imageUrls[0] ?? `data:image/jpeg;base64,${images[0]}`,
+      imageUrls: imageUrls.length > 0 ? imageUrls : [`data:image/jpeg;base64,${images[0]}`],
       productName: aiResult.name,
       characteristics: aiResult.characteristics,
       keywords: aiResult.keywords,

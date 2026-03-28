@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Star, LogOut, Download, Copy, Check, Loader2, Users, Zap, Image, Plus } from "lucide-react";
-import { motion } from "framer-motion";
+import { Star, LogOut, Download, Copy, Check, Loader2, Users, Zap, Image, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { api, type GenerationItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,159 @@ const MARKETPLACE_LABELS: Record<string, string> = {
   universal: "Универсальная",
 };
 
+function parseImageUrls(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+    return [raw];
+  } catch {
+    return [raw];
+  }
+}
+
+function parseOutputText(raw: string | null): Record<string, string> {
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+interface GenModalProps {
+  gen: GenerationItem;
+  onClose: () => void;
+}
+
+function GenModal({ gen, onClose }: GenModalProps) {
+  const images = parseImageUrls(gen.outputImageUrl);
+  const text = parseOutputText(gen.outputText);
+  const [imgIdx, setImgIdx] = useState(0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
+        transition={{ duration: 0.2 }}
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="sticky top-0 bg-white border-b border-border/30 p-5 flex items-center justify-between z-10">
+          <div>
+            <p className="font-bold text-base">{gen.productName ?? "Без названия"}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-muted-foreground">{MARKETPLACE_LABELS[gen.marketplace ?? ""] ?? gen.marketplace ?? "—"}</span>
+              {gen.price && <><span className="text-muted-foreground/40 text-xs">·</span><span className="text-xs text-muted-foreground">{gen.price} ₽</span></>}
+              <span className="text-muted-foreground/40 text-xs">·</span>
+              <span className="text-xs text-muted-foreground">{new Date(gen.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-secondary/60 text-muted-foreground transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="p-5 flex flex-col gap-4">
+          {images.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <div className="relative rounded-xl overflow-hidden bg-secondary/20 border border-border/30">
+                <img src={images[imgIdx]} alt={`Изображение ${imgIdx + 1}`} className="w-full object-contain max-h-72" />
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setImgIdx(i => Math.max(0, i - 1))}
+                      disabled={imgIdx === 0}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm border border-border/30 flex items-center justify-center hover:bg-white transition-colors disabled:opacity-30"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setImgIdx(i => Math.min(images.length - 1, i + 1))}
+                      disabled={imgIdx === images.length - 1}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm border border-border/30 flex items-center justify-center hover:bg-white transition-colors disabled:opacity-30"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                      {images.map((_, i) => (
+                        <button key={i} onClick={() => setImgIdx(i)} className={cn("w-2 h-2 rounded-full transition-all", i === imgIdx ? "bg-primary" : "bg-white/60")} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              {images.length > 1 && (
+                <div className="flex gap-2">
+                  {images.map((url, i) => (
+                    <button key={i} onClick={() => setImgIdx(i)} className={cn("flex-1 rounded-lg overflow-hidden border-2 aspect-square transition-all", i === imgIdx ? "border-primary" : "border-border/30 hover:border-primary/50")}>
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              <a
+                href={images[imgIdx]}
+                download={`card-${gen.id}-v${imgIdx + 1}.png`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Скачать{images.length > 1 ? ` вариант ${imgIdx + 1}` : " изображение"}
+              </a>
+            </div>
+          )}
+
+          {text.name && (
+            <div className="bg-secondary/30 rounded-xl p-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Название</p>
+              <p className="text-sm font-medium">{text.name}</p>
+            </div>
+          )}
+
+          {text.description && (
+            <div className="bg-secondary/30 rounded-xl p-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Описание</p>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{text.description}</p>
+            </div>
+          )}
+
+          {text.characteristics && (
+            <div className="bg-secondary/30 rounded-xl p-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Характеристики</p>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{text.characteristics}</p>
+            </div>
+          )}
+
+          {text.keywords && (
+            <div className="bg-secondary/30 rounded-xl p-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Ключевые слова</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{text.keywords}</p>
+            </div>
+          )}
+
+          {text.category && (
+            <div className="bg-secondary/30 rounded-xl p-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Категория</p>
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">{text.category}</span>
+            </div>
+          )}
+
+          {text.seoTips && (
+            <div className="bg-secondary/30 rounded-xl p-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">SEO-советы</p>
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{text.seoTips}</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user, logout, loading } = useAuth();
   const [, navigate] = useLocation();
@@ -23,6 +176,7 @@ export default function Dashboard() {
   const [referralInput, setReferralInput] = useState("");
   const [referralMsg, setReferralMsg] = useState("");
   const [applyingReferral, setApplyingReferral] = useState(false);
+  const [selectedGen, setSelectedGen] = useState<GenerationItem | null>(null);
   const { refreshUser } = useAuth();
 
   useEffect(() => {
@@ -223,53 +377,61 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="divide-y divide-border/30">
-              {generations.slice().reverse().map(gen => (
-                <div key={gen.id} className="p-4 flex gap-4 items-start hover:bg-secondary/20 transition-colors">
-                  <div className="w-16 h-16 rounded-xl bg-secondary/40 overflow-hidden shrink-0 flex items-center justify-center">
-                    {gen.outputImageUrl ? (
-                      <img src={gen.outputImageUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Image className="w-6 h-6 text-muted-foreground/40" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{gen.productName ?? "Без названия"}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        {MARKETPLACE_LABELS[gen.marketplace ?? ""] ?? gen.marketplace ?? "—"}
-                      </span>
-                      {gen.price && (
+              {generations.slice().reverse().map(gen => {
+                const images = parseImageUrls(gen.outputImageUrl);
+                return (
+                  <div
+                    key={gen.id}
+                    onClick={() => setSelectedGen(gen)}
+                    className="p-4 flex gap-4 items-start hover:bg-secondary/20 transition-colors cursor-pointer"
+                  >
+                    <div className="w-16 h-16 rounded-xl bg-secondary/40 overflow-hidden shrink-0 flex items-center justify-center relative">
+                      {images.length > 0 ? (
                         <>
-                          <span className="text-muted-foreground/40">·</span>
-                          <span className="text-xs text-muted-foreground">{gen.price} ₽</span>
+                          <img src={images[0]} alt="" className="w-full h-full object-cover" />
+                          {images.length > 1 && (
+                            <div className="absolute bottom-0.5 right-0.5 bg-black/60 text-white text-[10px] font-bold rounded px-1 leading-4">
+                              +{images.length - 1}
+                            </div>
+                          )}
                         </>
+                      ) : (
+                        <Image className="w-6 h-6 text-muted-foreground/40" />
                       )}
-                      <span className="text-muted-foreground/40">·</span>
-                      <span className={cn("text-xs font-medium", gen.status === "done" ? "text-green-600" : "text-orange-500")}>
-                        {gen.status === "done" ? "Готово" : "Обработка"}
-                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(gen.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{gen.productName ?? "Без названия"}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {MARKETPLACE_LABELS[gen.marketplace ?? ""] ?? gen.marketplace ?? "—"}
+                        </span>
+                        {gen.price && (
+                          <>
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className="text-xs text-muted-foreground">{gen.price} ₽</span>
+                          </>
+                        )}
+                        <span className="text-muted-foreground/40">·</span>
+                        <span className={cn("text-xs font-medium", gen.status === "done" ? "text-green-600" : "text-orange-500")}>
+                          {gen.status === "done" ? "Готово" : "Обработка"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {new Date(gen.createdAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                    <div className="text-xs text-primary font-medium shrink-0 mt-1">Открыть →</div>
                   </div>
-                  {gen.outputImageUrl && (
-                    <a
-                      href={gen.outputImageUrl}
-                      download={`card-${gen.id}.png`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 rounded-xl hover:bg-secondary/60 text-muted-foreground transition-colors shrink-0"
-                    >
-                      <Download className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedGen && <GenModal gen={selectedGen} onClose={() => setSelectedGen(null)} />}
+      </AnimatePresence>
     </div>
   );
 }

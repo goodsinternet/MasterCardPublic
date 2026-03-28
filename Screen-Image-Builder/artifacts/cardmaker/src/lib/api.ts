@@ -53,6 +53,7 @@ export interface GenerateResult {
   id: number;
   description: string;
   imageUrl: string;
+  imageUrls: string[];
   productName: string;
   characteristics: string;
   keywords: string;
@@ -82,11 +83,13 @@ export const api = {
   },
   generate: {
     create: (body: {
-      imagesBase64: string[];
+      imagesBase64?: string[];
+      imageBase64?: string;
       price?: string;
       marketplace: string;
       productName?: string;
       description?: string;
+      imageCount?: number;
     }) =>
       request<GenerateResult>("/generate", {
         method: "POST",
