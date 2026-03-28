@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Star, ArrowLeft, Upload, ImageIcon, X, Download, Loader2, Globe, ShoppingBag, Package, Sparkles, CheckCircle2, Images } from "lucide-react";
+import { Star, ArrowLeft, Upload, ImageIcon, X, Download, Loader2, Globe, ShoppingBag, Package, Sparkles, CheckCircle2, Images, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { api, isLoggedIn, type GenerateResult } from "@/lib/api";
@@ -427,8 +427,38 @@ export default function Generator() {
                     </motion.div>
                   ) : resultImages.length > 0 ? (
                     <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col gap-4">
-                      <div className="rounded-xl overflow-hidden border border-border/30 bg-secondary/20">
+                      <div className="relative rounded-xl overflow-hidden border border-border/30 bg-secondary/20 group">
                         <img src={resultImages[activeImageIndex]} alt={`Вариант ${activeImageIndex + 1}`} className="w-full object-contain max-h-72" />
+                        {resultImages.length > 1 && (
+                          <>
+                            <button
+                              onClick={() => setActiveImageIndex(i => Math.max(0, i - 1))}
+                              disabled={activeImageIndex === 0}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/85 backdrop-blur-sm border border-white/50 shadow-md flex items-center justify-center hover:bg-white transition-all disabled:opacity-0 disabled:pointer-events-none"
+                            >
+                              <ChevronLeft className="w-5 h-5 text-foreground" />
+                            </button>
+                            <button
+                              onClick={() => setActiveImageIndex(i => Math.min(resultImages.length - 1, i + 1))}
+                              disabled={activeImageIndex === resultImages.length - 1}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/85 backdrop-blur-sm border border-white/50 shadow-md flex items-center justify-center hover:bg-white transition-all disabled:opacity-0 disabled:pointer-events-none"
+                            >
+                              <ChevronRight className="w-5 h-5 text-foreground" />
+                            </button>
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                              {resultImages.map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => setActiveImageIndex(i)}
+                                  className={cn(
+                                    "w-2 h-2 rounded-full transition-all",
+                                    i === activeImageIndex ? "bg-primary w-4" : "bg-white/70 hover:bg-white"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {resultImages.length > 1 && (

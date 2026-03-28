@@ -289,7 +289,6 @@ async function generateCardImageWithKieAI(
           image_input: [imageUrl],
           aspect_ratio: "1:1",
           resolution: "1K",
-          output_format: "jpeg",
         },
       }),
     });
