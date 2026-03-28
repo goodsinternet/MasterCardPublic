@@ -256,9 +256,11 @@ async function generateCardImageWithKieAI(
   const TTL = 15 * 60 * 1000;
   tmpImageStore.set(uuid, { data: imageBase64, mime: "image/jpeg", expiresAt: Date.now() + TTL });
 
-  const domain = process.env.REPLIT_DEV_DOMAIN;
+  const replitDomains = process.env.REPLIT_DOMAINS;
+  const devDomain = process.env.REPLIT_DEV_DOMAIN;
+  const domain = replitDomains ? replitDomains.split(",")[0].trim() : devDomain;
   if (!domain) {
-    console.error("REPLIT_DEV_DOMAIN not set");
+    console.error("No domain env var set (REPLIT_DOMAINS or REPLIT_DEV_DOMAIN)");
     tmpImageStore.delete(uuid);
     return null;
   }
