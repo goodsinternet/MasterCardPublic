@@ -15,6 +15,31 @@ const MARKETPLACES = [
 const inputCls = "w-full px-4 py-2.5 rounded-xl border border-white/[0.1] bg-white/[0.05] text-[15px] text-white placeholder:text-white/25 focus:outline-none focus:border-[#4d9fff]/60 focus:ring-3 focus:ring-[#4d9fff]/15 transition-all";
 type TabId = "data" | "result";
 
+async function svgToPng(svgDataUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1000;
+      canvas.height = 1000;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, 1000, 1000);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = reject;
+    img.src = svgDataUrl;
+  });
+}
+
+async function downloadAsPng(url: string, filename: string) {
+  const isSvg = url.startsWith("data:image/svg");
+  const pngUrl = isSvg ? await svgToPng(url) : url;
+  const a = document.createElement("a");
+  a.href = pngUrl;
+  a.download = filename;
+  a.click();
+}
+
 export default function Generator() {
   const [activeTab, setActiveTab] = useState<TabId>("data");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -311,12 +336,12 @@ export default function Generator() {
                         </div>
                       )}
 
-                      <button onClick={() => { const url = resultImages[activeImageIndex]; const isSvg = url.startsWith("data:image/svg"); const ext = isSvg ? "svg" : "jpg"; const a = document.createElement("a"); a.href = url; a.download = `cardmaker-v${activeImageIndex + 1}.${ext}`; a.click(); }} className="w-full py-2.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#6aaeff] transition-colors">
+                      <button onClick={() => downloadAsPng(resultImages[activeImageIndex], `cardmaker-v${activeImageIndex + 1}.png`)} className="w-full py-2.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#6aaeff] transition-colors">
                         <Download className="w-4 h-4" />
                         Скачать{resultImages.length > 1 ? ` вариант ${activeImageIndex + 1}` : ""}
                       </button>
                       {resultImages.length > 1 && (
-                        <button onClick={async () => { for (let i = 0; i < resultImages.length; i++) { const url = resultImages[i]; const isSvg = url.startsWith("data:image/svg"); const ext = isSvg ? "svg" : "jpg"; const a = document.createElement("a"); a.href = url; a.download = `cardmaker-v${i + 1}.${ext}`; a.click(); await new Promise(r => setTimeout(r, 300)); } }} className="w-full py-2.5 rounded-full border border-white/[0.1] text-[14px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.05] transition-colors flex items-center justify-center gap-2">
+                        <button onClick={async () => { for (let i = 0; i < resultImages.length; i++) { await downloadAsPng(resultImages[i], `cardmaker-v${i + 1}.png`); await new Promise(r => setTimeout(r, 400)); } }} className="w-full py-2.5 rounded-full border border-white/[0.1] text-[14px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.05] transition-colors flex items-center justify-center gap-2">
                           <Download className="w-4 h-4" />
                           Скачать все ({resultImages.length})
                         </button>
