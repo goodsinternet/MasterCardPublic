@@ -6,6 +6,7 @@ import generateRouter from "./generate.js";
 import referralRouter from "./referral.js";
 import tmpImagesRouter from "./tmpImages.js";
 import adminRouter from "./admin.js";
+import paymentsRouter, { handleYookassaWebhook } from "./payments.js";
 
 const router: IRouter = Router();
 
@@ -17,5 +18,7 @@ router.use("/generations", generateRouter);
 router.use("/referral", referralRouter);
 router.use("/tmp", tmpImagesRouter);
 router.use("/admin", adminRouter);
+router.use("/payments", paymentsRouter);
+router.post("/yookassa-webhook", handleYookassaWebhook);
 
 export default router;

@@ -32,7 +32,17 @@ export interface UserProfile {
   referralCode: string;
   freeGenerations: number;
   bonusGenerations: number;
+  paidGenerations: number;
   isAdmin?: boolean;
+}
+
+export interface PaymentItem {
+  id: number;
+  yookassaPaymentId: string | null;
+  amount: string;
+  generationsCount: number;
+  status: string;
+  createdAt: string;
 }
 
 export interface BonusTransaction {
@@ -113,6 +123,15 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ code }),
       }),
+  },
+  payments: {
+    create: (plan: string) =>
+      request<{ success: boolean; paymentUrl: string; paymentId: string }>("/payments/create", {
+        method: "POST",
+        body: JSON.stringify({ plan }),
+      }),
+    history: () =>
+      request<{ payments: PaymentItem[] }>("/payments/history"),
   },
   admin: {
     stats: () =>

@@ -10,6 +10,7 @@ export const usersTable = pgTable("users", {
   referrerId: integer("referrer_id"),
   freeGenerations: integer("free_generations").notNull().default(3),
   bonusGenerations: integer("bonus_generations").notNull().default(0),
+  paidGenerations: integer("paid_generations").notNull().default(0),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

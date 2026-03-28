@@ -9,6 +9,7 @@ import Generator from "@/pages/Generator";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
+import PaymentSuccess from "@/pages/PaymentSuccess";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/auth" component={Auth} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/admin" component={Admin} />
+      <Route path="/payment-success" component={PaymentSuccess} />
       <Route component={NotFound} />
     </Switch>
   );

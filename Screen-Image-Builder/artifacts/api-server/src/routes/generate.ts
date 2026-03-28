@@ -225,9 +225,9 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       res.status(404).json({ error: "Пользователь не найден" });
       return;
     }
-    const totalGenerations = user.isAdmin ? Infinity : user.bonusGenerations + user.freeGenerations;
+    const totalGenerations = user.isAdmin ? Infinity : user.bonusGenerations + user.freeGenerations + user.paidGenerations;
     if (!user.isAdmin && totalGenerations <= 0) {
-      res.status(403).json({ error: "Недостаточно генераций. Пригласите друга по реферальному коду для получения +3 бонусных генераций." });
+      res.status(403).json({ error: "Недостаточно генераций. Пополните баланс или пригласите друга по реферальному коду." });
       return;
     }
 
@@ -244,9 +244,13 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
         await db.update(usersTable)
           .set({ bonusGenerations: sql`${usersTable.bonusGenerations} - 1` })
           .where(eq(usersTable.id, userId));
-      } else {
+      } else if (user.freeGenerations > 0) {
         await db.update(usersTable)
           .set({ freeGenerations: sql`${usersTable.freeGenerations} - 1` })
+          .where(eq(usersTable.id, userId));
+      } else {
+        await db.update(usersTable)
+          .set({ paidGenerations: sql`${usersTable.paidGenerations} - 1` })
           .where(eq(usersTable.id, userId));
       }
     }

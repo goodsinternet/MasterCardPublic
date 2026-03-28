@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LogOut, Download, Copy, Check, Loader2, Users, Zap, Image, Plus, X, ChevronLeft, ChevronRight, Gift, TrendingUp, ExternalLink, Clock } from "lucide-react";
+import { LogOut, Download, Copy, Check, Loader2, Users, Zap, Image, Plus, X, ChevronLeft, ChevronRight, Gift, TrendingUp, ExternalLink, Clock, CreditCard, ShoppingCart, Wallet } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
-import { api, type GenerationItem, type BonusTransaction } from "@/lib/api";
+import { api, type GenerationItem, type BonusTransaction, type PaymentItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const MARKETPLACE_LABELS: Record<string, string> = {
@@ -110,7 +110,10 @@ export default function Dashboard() {
   const [referralMsgOk, setReferralMsgOk] = useState(false);
   const [applyingReferral, setApplyingReferral] = useState(false);
   const [selectedGen, setSelectedGen] = useState<GenerationItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"history" | "partner">("history");
+  const [activeTab, setActiveTab] = useState<"history" | "partner" | "payments">("history");
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [payLoading, setPayLoading] = useState<string | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentItem[]>([]);
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [user, loading]);
   useEffect(() => {
@@ -121,6 +124,24 @@ export default function Dashboard() {
       setBonusHistory(data.bonusHistory ?? []);
     }).finally(() => setGLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (activeTab === "payments" && user) {
+      api.payments.history().then(data => setPaymentHistory(data.payments));
+    }
+  }, [activeTab, user]);
+
+  async function buyGenerations(plan: string) {
+    setPayLoading(plan);
+    try {
+      const res = await api.payments.create(plan);
+      if (res.paymentUrl) window.location.href = res.paymentUrl;
+    } catch (err: any) {
+      alert(err.message ?? "Ошибка при создании платежа");
+    } finally {
+      setPayLoading(null);
+    }
+  }
 
   const referralLink = user ? `${window.location.origin}/auth?ref=${user.referralCode}` : "";
 
@@ -206,6 +227,27 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Paid balance card */}
+        {!user.isAdmin && (
+          <div className="glass rounded-3xl p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-2xl bg-[#ff9f0a]/15 flex items-center justify-center shrink-0">
+                <Wallet className="w-5 h-5 text-[#ff9f0a]" />
+              </div>
+              <div>
+                <p className="text-[13px] text-white/40">Платных генераций</p>
+                <p className="text-[24px] font-bold text-[#ff9f0a] tracking-[-0.02em]">{user.paidGenerations ?? 0}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPayModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff9f0a] text-black text-[14px] font-semibold hover:bg-[#ffb340] transition-colors"
+            >
+              <ShoppingCart className="w-4 h-4" /> Пополнить
+            </button>
+          </div>
+        )}
+
         {/* Infographics */}
         {!gLoading && (generations.length > 0 || referralCount > 0) && (
           <div className="glass rounded-3xl p-6">
@@ -281,19 +323,25 @@ export default function Dashboard() {
         )}
 
         {/* Zero balance */}
-        {!user.isAdmin && user.freeGenerations + user.bonusGenerations === 0 && (
+        {!user.isAdmin && user.freeGenerations + user.bonusGenerations + (user.paidGenerations ?? 0) === 0 && (
           <div className="glass rounded-3xl p-5 flex items-start gap-3">
             <div className="w-9 h-9 rounded-2xl bg-[#ffd60a]/15 flex items-center justify-center shrink-0"><Zap className="w-4 h-4 text-[#ffd60a]" /></div>
-            <div>
+            <div className="flex-1">
               <p className="text-[15px] font-semibold text-white/90">Генерации закончились</p>
-              <p className="text-[13px] text-white/40 mt-0.5">Пригласите друга — получите <strong className="text-white/70">+3 бонусных генерации</strong> сразу.</p>
+              <p className="text-[13px] text-white/40 mt-0.5">Купите пакет или пригласите друга — <strong className="text-white/70">+3 бонусных генерации</strong>.</p>
             </div>
+            <button
+              onClick={() => setShowPayModal(true)}
+              className="px-4 py-2 rounded-full bg-[#ff9f0a] text-black text-[13px] font-semibold hover:bg-[#ffb340] transition-colors whitespace-nowrap"
+            >
+              Купить
+            </button>
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex glass rounded-2xl p-1 w-fit">
-          {([["history", "История карточек"], ["partner", "Партнёрская программа"]] as const).map(([tab, label]) => (
+        <div className="flex glass rounded-2xl p-1 w-fit flex-wrap gap-1">
+          {([["history", "История карточек"], ["payments", "Платежи"], ["partner", "Партнёрская программа"]] as const).map(([tab, label]) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -357,6 +405,55 @@ export default function Dashboard() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Payments tab */}
+        {activeTab === "payments" && (
+          <div className="glass rounded-3xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-white/[0.07] flex items-center justify-between">
+              <h2 className="text-[15px] font-semibold text-white/90">История платежей</h2>
+              <button
+                onClick={() => setShowPayModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#ff9f0a] text-black text-[13px] font-semibold hover:bg-[#ffb340] transition-colors"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" /> Пополнить
+              </button>
+            </div>
+            {paymentHistory.length === 0 ? (
+              <div className="p-14 flex flex-col items-center gap-3 text-center">
+                <div className="w-16 h-16 rounded-3xl bg-white/[0.04] flex items-center justify-center">
+                  <CreditCard className="w-7 h-7 text-white/20" />
+                </div>
+                <div>
+                  <p className="text-[15px] font-semibold text-white/80">Нет платежей</p>
+                  <p className="text-[13px] text-white/35 mt-0.5">Пополните баланс генераций</p>
+                </div>
+                <button
+                  onClick={() => setShowPayModal(true)}
+                  className="mt-2 px-5 py-2 rounded-full bg-[#ff9f0a] text-black text-[14px] font-semibold hover:bg-[#ffb340] transition-colors"
+                >
+                  Купить генерации
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-white/[0.05]">
+                {paymentHistory.map(p => (
+                  <div key={p.id} className="px-5 py-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-[14px] font-semibold text-white/85">+{p.generationsCount} генераций</p>
+                      <p className="text-[12px] text-white/35 mt-0.5">{new Date(p.createdAt).toLocaleDateString("ru-RU")}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[14px] font-semibold text-[#ff9f0a]">{p.amount} ₽</p>
+                      <p className={cn("text-[12px] mt-0.5", p.status === "succeeded" ? "text-[#30d158]" : p.status === "pending" ? "text-[#ffd60a]" : "text-white/35")}>
+                        {p.status === "succeeded" ? "Оплачен" : p.status === "pending" ? "Ожидание" : p.status}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -468,6 +565,79 @@ export default function Dashboard() {
 
       <AnimatePresence>
         {selectedGen && <GenModal gen={selectedGen} onClose={() => setSelectedGen(null)} />}
+      </AnimatePresence>
+
+      {/* Payment plan modal */}
+      <AnimatePresence>
+        {showPayModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowPayModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-md glass rounded-3xl p-6"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-[18px] font-bold text-white">Купить генерации</h2>
+                  <p className="text-[13px] text-white/40 mt-0.5">Выберите подходящий пакет</p>
+                </div>
+                <button onClick={() => setShowPayModal(false)} className="p-2 rounded-full hover:bg-white/[0.07] text-white/40 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {[
+                  { plan: "5gen",  label: "Базовый",  gens: 5,  price: "299", perGen: "60", popular: false },
+                  { plan: "10gen", label: "Стандарт", gens: 10, price: "499", perGen: "50", popular: true },
+                  { plan: "25gen", label: "Профи",    gens: 25, price: "999", perGen: "40", popular: false },
+                ].map(({ plan, label, gens, price, perGen, popular }) => (
+                  <button
+                    key={plan}
+                    onClick={() => buyGenerations(plan)}
+                    disabled={!!payLoading}
+                    className={cn(
+                      "relative flex items-center justify-between p-4 rounded-2xl border transition-all text-left",
+                      popular
+                        ? "border-[#ff9f0a]/60 bg-[#ff9f0a]/10 hover:bg-[#ff9f0a]/15"
+                        : "border-white/[0.09] bg-white/[0.04] hover:bg-white/[0.07]"
+                    )}
+                  >
+                    {popular && (
+                      <span className="absolute -top-2.5 left-4 text-[11px] font-bold text-black bg-[#ff9f0a] px-2 py-0.5 rounded-full">
+                        ПОПУЛЯРНЫЙ
+                      </span>
+                    )}
+                    <div>
+                      <p className="text-[15px] font-semibold text-white">{label} · {gens} генераций</p>
+                      <p className="text-[12px] text-white/40 mt-0.5">{perGen} ₽ за генерацию</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[18px] font-bold text-[#ff9f0a]">{price} ₽</span>
+                      {payLoading === plan ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-white/30" />
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[12px] text-white/25 mt-4 text-center">
+                Оплата через ЮKassa · Карты, СБП, ЮMoney
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
