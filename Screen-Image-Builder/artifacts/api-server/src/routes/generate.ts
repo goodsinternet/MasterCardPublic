@@ -4,6 +4,7 @@ import { eq, sql } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
 import OpenAI from "openai";
 import { generateInfographicSvg } from "../lib/infographic-svg.js";
+import { generateWithNanoBanana } from "../lib/nanobanana.js";
 
 const router = Router();
 
@@ -156,13 +157,7 @@ async function analyzeImagesWithOpenAI(
   };
 }
 
-function generateMultipleCardImages(
-  imageBase64: string,
-  productName: string,
-  marketplace: string,
-  count: number,
-  features: string[] = [],
-): string[] {
+function svgFallback(imageBase64: string, productName: string, marketplace: string, features: string[], variantIndex: number): string {
   const marketplaceNames: Record<string, string> = {
     wildberries: "Wildberries",
     ozon: "Ozon",
@@ -170,10 +165,35 @@ function generateMultipleCardImages(
     universal: "Маркетплейс",
   };
   const mp = marketplaceNames[marketplace] ?? marketplace;
-  return Array.from({ length: count }, (_, i) => {
-    const svg = generateInfographicSvg({ productName, features, marketplace: mp, imageBase64, variantIndex: i });
-    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  const svg = generateInfographicSvg({ productName, features, marketplace: mp, imageBase64, variantIndex });
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+
+async function generateMultipleCardImages(
+  imageBase64: string,
+  productName: string,
+  marketplace: string,
+  price: string,
+  count: number,
+  features: string[] = [],
+): Promise<string[]> {
+  const marketplaceNames: Record<string, string> = {
+    wildberries: "Wildberries",
+    ozon: "Ozon",
+    yandex: "Яндекс Маркет",
+    universal: "Маркетплейс",
+  };
+  const mp = marketplaceNames[marketplace] ?? marketplace;
+
+  const tasks = Array.from({ length: count }, async (_, i) => {
+    const aiUrl = await generateWithNanoBanana(imageBase64, productName, mp, price, features, i);
+    if (aiUrl) return aiUrl;
+    // Fallback to SVG if NanoBanana fails
+    console.warn(`NanoBanana variant ${i} failed, using SVG fallback`);
+    return svgFallback(imageBase64, productName, marketplace, features, i);
   });
+
+  return Promise.all(tasks);
 }
 
 router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
@@ -240,8 +260,8 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       .filter((s: string) => s.length > 3 && s.length < 60)
       .slice(0, 3);
 
-    // Generate SVG infographic cards — each variant with a different design
-    const imageUrls = generateMultipleCardImages(images[0], aiResult.name, marketplace, count, featureLines);
+    // Generate infographic cards via NanoBanana Pro (SVG fallback)
+    const imageUrls = await generateMultipleCardImages(images[0], aiResult.name, marketplace, price ?? "", count, featureLines);
 
     const outputImageUrl = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
 
