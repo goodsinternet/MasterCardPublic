@@ -1,41 +1,50 @@
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/Button";
 
 export function CTA() {
   return (
-    <section className="py-24 relative overflow-hidden">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
+    <section className="py-28 bg-[#f5f5f7]">
+      <div className="max-w-3xl mx-auto px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="bg-gradient-to-br from-primary via-indigo-600 to-purple-800 rounded-[3rem] p-10 md:p-16 text-center text-white shadow-2xl shadow-primary/30 relative overflow-hidden"
+          transition={{ duration: 0.7 }}
+          className="text-center"
         >
-          {/* Background decorative elements */}
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-60 h-60 bg-white opacity-10 rounded-full blur-2xl"></div>
-          
-          <div className="relative z-10">
-            <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-2xl backdrop-blur-sm mb-6">
-              <Sparkles className="w-8 h-8 text-white" />
-            </div>
-            
-            <h2 className="text-4xl md:text-5xl font-bold font-display mb-4">
-              Готовы создать карточку?
-            </h2>
-            
-            <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-              Бесплатные пробные генерации — без регистрации и привязки карты. Оцените качество нейросети прямо сейчас.
-            </p>
-            
+          <p className="text-[13px] font-medium text-[#0071e3] mb-4 uppercase tracking-widest">Начать бесплатно</p>
+          <h2 className="text-[48px] font-bold text-[#1d1d1f] tracking-[-0.03em] leading-[1.08] mb-5">
+            Создайте первую
+            <br />карточку прямо сейчас.
+          </h2>
+          <p className="text-[19px] text-[#6e6e73] mb-10 max-w-xl mx-auto">
+            3 бесплатные генерации при регистрации. Привязка карты не нужна.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/generator">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl">
-                Попробовать бесплатно →
-              </Button>
+              <button className="px-7 py-3 rounded-full bg-[#0071e3] text-white text-[17px] font-medium hover:bg-[#0077ed] transition-colors shadow-sm">
+                Попробовать бесплатно
+              </button>
             </Link>
+            <Link href="/auth">
+              <button className="px-7 py-3 rounded-full bg-white text-[#1d1d1f] text-[17px] font-medium hover:bg-[#e8e8ed] transition-colors border border-black/[0.08]">
+                Создать аккаунт
+              </button>
+            </Link>
+          </div>
+
+          <div className="mt-12 flex items-center justify-center gap-10 text-center">
+            {[
+              { val: "< 60с", label: "Время генерации" },
+              { val: "5", label: "Вариантов карточки" },
+              { val: "3", label: "Маркетплейса" },
+            ].map(s => (
+              <div key={s.label}>
+                <p className="text-[28px] font-bold text-[#1d1d1f] tracking-[-0.02em]">{s.val}</p>
+                <p className="text-[13px] text-[#6e6e73] mt-0.5">{s.label}</p>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>

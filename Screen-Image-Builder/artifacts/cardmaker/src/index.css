@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -28,66 +27,35 @@
 
 :root {
   --background: 0 0% 100%;
-  --foreground: 260 20% 10%;
-  
+  --foreground: 0 0% 11%;
+
   --card: 0 0% 100%;
-  --card-foreground: 260 20% 10%;
-  
+  --card-foreground: 0 0% 11%;
+
   --popover: 0 0% 100%;
-  --popover-foreground: 260 20% 10%;
-  
-  /* Primary Purple #8B5cf6 */
-  --primary: 258 90% 66%;
-  --primary-foreground: 210 40% 98%;
-  
-  /* Soft purple secondary */
-  --secondary: 258 50% 96%;
-  --secondary-foreground: 258 90% 40%;
-  
-  --muted: 260 20% 96%;
-  --muted-foreground: 260 10% 45%;
-  
-  --accent: 258 50% 96%;
-  --accent-foreground: 258 90% 40%;
-  
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
+  --popover-foreground: 0 0% 11%;
 
-  --border: 260 20% 92%;
-  --input: 260 20% 92%;
-  --ring: 258 90% 66%;
+  /* Apple Blue #0071e3 */
+  --primary: 211 100% 44%;
+  --primary-foreground: 0 0% 100%;
 
-  --radius: 1rem;
-}
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 11%;
 
-.dark {
-  --background: 260 20% 5%;
-  --foreground: 210 40% 98%;
-  
-  --card: 260 20% 8%;
-  --card-foreground: 210 40% 98%;
-  
-  --popover: 260 20% 8%;
-  --popover-foreground: 210 40% 98%;
-  
-  --primary: 258 90% 66%;
-  --primary-foreground: 210 40% 98%;
-  
-  --secondary: 260 20% 15%;
-  --secondary-foreground: 210 40% 98%;
-  
-  --muted: 260 20% 15%;
-  --muted-foreground: 260 10% 65%;
-  
-  --accent: 260 20% 15%;
-  --accent-foreground: 210 40% 98%;
-  
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  
-  --border: 260 20% 15%;
-  --input: 260 20% 15%;
-  --ring: 258 90% 66%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 43%;
+
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 11%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 82%;
+  --input: 0 0% 82%;
+  --ring: 211 100% 44%;
+
+  --radius: 0.75rem;
 }
 
 @layer base {
@@ -95,29 +63,50 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/15 selection:text-primary;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply tracking-tight;
+    letter-spacing: -0.02em;
   }
 }
 
-/* Custom Utilities for aesthetic effects */
-.glass-panel {
-  @apply bg-white/70 backdrop-blur-md border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+.glass-nav {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-indigo-600;
+  background: linear-gradient(135deg, #0071e3 0%, #42a5f5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.apple-card {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06);
+}
+
+.apple-card-hover {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.apple-card-hover:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 0 1px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
 }
 
 .animate-float {
-  animation: float 6s ease-in-out infinite;
+  animation: float 8s ease-in-out infinite;
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-14px); }
   100% { transform: translateY(0px); }
 }

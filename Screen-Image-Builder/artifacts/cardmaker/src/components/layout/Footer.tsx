@@ -1,24 +1,13 @@
-import { Star } from "lucide-react";
-
 export function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Star className="w-5 h-5 fill-primary/20" />
-            </div>
-            <span className="font-display font-bold text-xl text-foreground">
-              CardMaker
-            </span>
-          </div>
-          <p className="text-muted-foreground text-sm text-center md:text-left">
-            © 2026 CardMaker. Генератор карточек для маркетплейсов.
-          </p>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Правила</a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Конфиденциальность</a>
+    <footer className="border-t border-black/[0.08] bg-[#f5f5f7]">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8 py-10">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <span className="font-semibold text-[15px] text-[#1d1d1f]">CardMaker</span>
+          <p className="text-[13px] text-[#6e6e73]">© 2026 CardMaker. Генератор карточек для маркетплейсов.</p>
+          <div className="flex gap-5">
+            <a href="#" className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Правила</a>
+            <a href="#" className="text-[13px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">Конфиденциальность</a>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useSearch } from "wouter";
-import { Star, Mail, Lock, ArrowRight, Eye, EyeOff, Loader2, Gift } from "lucide-react";
+import { Eye, EyeOff, Loader2, Gift } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
@@ -41,68 +41,59 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] flex flex-col items-center justify-center px-4">
-      <Link href="/" className="flex items-center gap-2 mb-8">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg">
-          <Star className="w-5 h-5 fill-white/20" />
-        </div>
-        <span className="font-bold text-2xl tracking-tight text-foreground">CardMaker</span>
+      <Link href="/" className="mb-8">
+        <span className="font-semibold text-[20px] text-[#1d1d1f] tracking-[-0.01em]">CardMaker</span>
       </Link>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white rounded-2xl border border-border/40 shadow-sm p-8"
+        transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+        className="w-full max-w-[400px] apple-card p-8"
       >
-        <div className="flex rounded-xl bg-secondary/40 p-1 mb-6">
-          <button
-            onClick={() => setMode("login")}
-            className={cn(
-              "flex-1 py-2 rounded-lg text-sm font-medium transition-all",
-              mode === "login" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"
-            )}
-          >
-            Войти
-          </button>
-          <button
-            onClick={() => setMode("register")}
-            className={cn(
-              "flex-1 py-2 rounded-lg text-sm font-medium transition-all",
-              mode === "register" ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"
-            )}
-          >
-            Регистрация
-          </button>
+        {/* Mode toggle */}
+        <div className="flex bg-[#f5f5f7] rounded-xl p-1 mb-7">
+          {(["login", "register"] as Mode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "flex-1 py-2 rounded-[10px] text-[14px] font-medium transition-all duration-200",
+                mode === m
+                  ? "bg-white text-[#1d1d1f] shadow-[0_1px_4px_rgba(0,0,0,0.10)]"
+                  : "text-[#6e6e73] hover:text-[#1d1d1f]"
+              )}
+            >
+              {m === "login" ? "Войти" : "Регистрация"}
+            </button>
+          ))}
         </div>
 
-        <h1 className="text-2xl font-bold mb-1">
-          {mode === "login" ? "Добро пожаловать!" : "Создать аккаунт"}
+        <h1 className="text-[24px] font-bold text-[#1d1d1f] tracking-[-0.02em] mb-1">
+          {mode === "login" ? "Добро пожаловать" : "Создать аккаунт"}
         </h1>
-        <p className="text-sm text-muted-foreground mb-6">
+        <p className="text-[14px] text-[#6e6e73] mb-7">
           {mode === "login"
-            ? "Войдите, чтобы управлять своими карточками"
+            ? "Войдите, чтобы управлять карточками"
             : "3 бесплатные генерации при регистрации"}
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
-              />
-            </div>
+            <label className="block text-[13px] font-medium text-[#1d1d1f] mb-1.5">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="you@example.com"
+              className="w-full px-4 py-2.5 rounded-xl border border-[#d2d2d7] text-[15px] text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:border-[#0071e3] focus:ring-3 focus:ring-[#0071e3]/15 bg-white transition-all"
+            />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5">Пароль</label>
+            <label className="block text-[13px] font-medium text-[#1d1d1f] mb-1.5">Пароль</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -110,12 +101,12 @@ export default function Auth() {
                 required
                 minLength={6}
                 placeholder="Минимум 6 символов"
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-border/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                className="w-full px-4 py-2.5 pr-11 rounded-xl border border-[#d2d2d7] text-[15px] text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:border-[#0071e3] focus:ring-3 focus:ring-[#0071e3]/15 bg-white transition-all"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aeaeb2] hover:text-[#6e6e73] transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -124,11 +115,14 @@ export default function Auth() {
 
           {mode === "register" && (
             <div>
-              <label className="block text-sm font-medium mb-1.5">
-                Реферальный код <span className="text-muted-foreground font-normal">(необязательно)</span>
+              <label className="block text-[13px] font-medium text-[#1d1d1f] mb-1.5">
+                Реферальный код{" "}
+                <span className="text-[#6e6e73] font-normal">(необязательно)</span>
               </label>
               <div className="relative">
-                {refFromUrl && <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />}
+                {refFromUrl && (
+                  <Gift className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0071e3]" />
+                )}
                 <input
                   type="text"
                   value={referralCode}
@@ -136,21 +130,21 @@ export default function Auth() {
                   placeholder="XXXXXX"
                   maxLength={6}
                   className={cn(
-                    "w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white font-mono tracking-widest",
-                    refFromUrl ? "pl-10 border-primary/40 bg-primary/5" : "border-border/50"
+                    "w-full px-4 py-2.5 rounded-xl border text-[15px] font-mono tracking-widest text-[#1d1d1f] placeholder:text-[#aeaeb2] focus:outline-none focus:border-[#0071e3] focus:ring-3 focus:ring-[#0071e3]/15 bg-white transition-all",
+                    refFromUrl ? "pl-10 border-[#0071e3]/40 bg-[#f0f6ff]" : "border-[#d2d2d7]"
                   )}
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[12px] text-[#6e6e73] mt-1.5">
                 {refFromUrl
-                  ? "Реферальный код партнёра применён автоматически"
-                  : "Ваш партнёр получит +3 бонусные генерации за приглашение"}
+                  ? "Код партнёра применён автоматически"
+                  : "Ваш партнёр получит +3 генерации за приглашение"}
               </p>
             </div>
           )}
 
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-2.5 text-sm text-destructive">
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-[13px] text-red-600">
               {error}
             </div>
           )}
@@ -158,24 +152,21 @@ export default function Auth() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-70"
+            className="w-full py-3 rounded-full bg-[#0071e3] text-white text-[15px] font-medium hover:bg-[#0077ed] transition-colors disabled:opacity-60 flex items-center justify-center gap-2 mt-1"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <>
-                {mode === "login" ? "Войти" : "Создать аккаунт"}
-                <ArrowRight className="w-4 h-4" />
-              </>
+              mode === "login" ? "Войти" : "Создать аккаунт"
             )}
           </button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground mt-4">
+        <p className="text-center text-[13px] text-[#6e6e73] mt-5">
           {mode === "login" ? "Нет аккаунта? " : "Уже есть аккаунт? "}
           <button
             onClick={() => setMode(mode === "login" ? "register" : "login")}
-            className="text-primary font-medium hover:underline"
+            className="text-[#0071e3] hover:text-[#0077ed] font-medium transition-colors"
           >
             {mode === "login" ? "Зарегистрироваться" : "Войти"}
           </button>

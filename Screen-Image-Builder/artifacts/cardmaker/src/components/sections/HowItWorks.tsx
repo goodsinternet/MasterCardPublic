@@ -3,66 +3,65 @@ import { UploadCloud, Wand2, Download } from "lucide-react";
 
 const steps = [
   {
+    num: "01",
     icon: UploadCloud,
-    title: "1. Загрузите фото",
-    description: "Загрузите фотографию товара в формате JPEG или PNG в высоком качестве.",
-    delay: 0.1,
+    title: "Загрузите фото",
+    description: "Загрузите фотографию товара в JPEG или PNG. Поддерживается до 5 изображений.",
   },
   {
+    num: "02",
     icon: Wand2,
-    title: "2. Укажите данные",
-    description: "Введите название, цену и краткое описание товара для инфографики.",
-    delay: 0.2,
+    title: "Укажите данные",
+    description: "Выберите маркетплейс, введите название, цену и краткое описание товара.",
   },
   {
+    num: "03",
     icon: Download,
-    title: "3. Скачайте карточку",
-    description: "AI создаст продающую карточку с инфографикой. Просто скачайте и публикуйте.",
-    delay: 0.3,
-  }
+    title: "Скачайте карточку",
+    description: "AI создаст до 5 вариантов карточки с инфографикой. Скачайте и публикуйте.",
+  },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="py-24 bg-secondary/30 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold font-display mb-4 text-foreground">
-            Как это работает
+    <section className="py-28 bg-white">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <p className="text-[13px] font-medium text-[#0071e3] mb-3 uppercase tracking-widest">Процесс</p>
+          <h2 className="text-[48px] font-bold text-[#1d1d1f] tracking-[-0.03em] leading-[1.08]">
+            Три шага до результата.
           </h2>
-          <p className="text-xl text-muted-foreground">
-            Три простых шага до готовой карточки, которая увеличит ваши продажи.
+          <p className="text-[19px] text-[#6e6e73] mt-4 max-w-xl mx-auto">
+            Никаких дизайнеров. Никаких шаблонов. Только ваше фото и AI.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.5, delay: step.delay }}
-                className="bg-card rounded-3xl p-8 shadow-lg shadow-black/[0.03] border border-border/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group"
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.55, delay: index * 0.1 }}
+                className="apple-card apple-card-hover p-8"
               >
-                {/* Connector line for desktop */}
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-16 -right-4 w-8 border-t-2 border-dashed border-primary/30 z-0" />
-                )}
-                
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center mb-6 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300 relative z-10">
-                  <Icon className="w-8 h-8 text-white" />
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-[40px] font-bold text-[#f5f5f7] leading-none select-none">{step.num}</span>
+                  <div className="w-11 h-11 rounded-2xl bg-[#0071e3] flex items-center justify-center shadow-sm">
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
                 </div>
-                
-                <h3 className="text-2xl font-bold font-display mb-3 text-foreground">
-                  {step.title}
-                </h3>
-                
-                <p className="text-muted-foreground leading-relaxed">
-                  {step.description}
-                </p>
+                <h3 className="text-[19px] font-semibold text-[#1d1d1f] mb-2">{step.title}</h3>
+                <p className="text-[14px] text-[#6e6e73] leading-relaxed">{step.description}</p>
               </motion.div>
             );
           })}

@@ -1,53 +1,54 @@
 import { Link } from "wouter";
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/lib/auth-context";
 
 export function Navbar() {
   const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-lg border-b border-border/40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
+    <header className="fixed top-0 left-0 right-0 z-50 glass-nav border-b border-black/[0.08]">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-[52px]">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
-              <Star className="w-6 h-6 fill-white/20" />
+            <div className="w-7 h-7 rounded-lg bg-[#0071e3] flex items-center justify-center shadow-sm">
+              <svg viewBox="0 0 20 20" fill="none" className="w-4 h-4">
+                <path d="M10 2L3 7v11h4v-6h6v6h4V7L10 2z" fill="white" fillOpacity="0.9"/>
+              </svg>
             </div>
-            <span className="font-display font-bold text-2xl tracking-tight text-foreground">
-              CardMaker
-            </span>
+            <span className="font-semibold text-[17px] text-[#1d1d1f] tracking-[-0.01em]">CardMaker</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/generator" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+          <nav className="hidden md:flex items-center gap-7">
+            <Link href="/generator" className="text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
               Генератор
             </Link>
-            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+            <Link href="/dashboard" className="text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
               Партнёрка
             </Link>
             {user?.isAdmin && (
-              <Link href="/admin" className="text-sm font-medium text-violet-600 hover:text-violet-500 transition-colors">
-                Админ панель
+              <Link href="/admin" className="text-[14px] text-[#0071e3] hover:text-[#0077ed] transition-colors">
+                Админ
               </Link>
             )}
           </nav>
 
-          {/* Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {user ? (
               <Link href="/dashboard">
-                <Button variant="ghost" className="hidden sm:inline-flex">Кабинет</Button>
+                <button className="text-[14px] font-medium text-[#0071e3] hover:text-[#0077ed] transition-colors">
+                  Кабинет
+                </button>
               </Link>
             ) : (
               <Link href="/auth">
-                <Button variant="ghost" className="hidden sm:inline-flex">Войти</Button>
+                <button className="text-[14px] font-medium text-[#0071e3] hover:text-[#0077ed] transition-colors">
+                  Войти
+                </button>
               </Link>
             )}
             <Link href="/generator">
-              <Button>Создать карточку</Button>
+              <button className="px-4 py-1.5 rounded-full bg-[#0071e3] text-white text-[14px] font-medium hover:bg-[#0077ed] transition-colors shadow-sm">
+                Создать карточку
+              </button>
             </Link>
           </div>
         </div>

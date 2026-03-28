@@ -1,88 +1,72 @@
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/Button";
 
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
-      <div className="absolute top-0 right-0 -z-10 w-[800px] h-[800px] opacity-30 mix-blend-multiply pointer-events-none">
-         <img 
-            src={`${import.meta.env.BASE_URL}images/mesh-bg.png`} 
-            alt="" 
-            className="w-full h-full object-cover"
-         />
-      </div>
+    <section className="relative pt-40 pb-28 overflow-hidden bg-white">
+      {/* Subtle radial glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] bg-[radial-gradient(ellipse_at_top,_#e8f0fe_0%,_transparent_70%)] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-          
-          {/* Text Content */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="max-w-2xl"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6 border border-primary/20">
-              <Sparkles className="w-4 h-4" />
-              <span>AI-генерация карточек для маркетплейсов</span>
-            </div>
-            
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold font-display leading-[1.1] mb-6 text-foreground">
-              Карточка товара <br/>
-              <span className="text-gradient">за минуту</span>
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
-              Загрузите фото товара — получите готовую продающую карточку с инфографикой для Wildberries, Ozon и Яндекс.Маркет.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/generator">
-                <Button size="lg" className="group">
-                  Создать карточку
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline">
+      <div className="max-w-5xl mx-auto px-6 lg:px-8 relative">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+          className="text-center"
+        >
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f5f5f7] text-[#6e6e73] text-[13px] font-medium mb-8 border border-black/[0.06]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
+            AI-генерация для маркетплейсов
+          </div>
+
+          <h1 className="text-[64px] sm:text-[72px] lg:text-[80px] font-bold text-[#1d1d1f] leading-[1.05] tracking-[-0.035em] mb-6">
+            Карточка товара
+            <br />
+            <span className="text-gradient">за одну минуту.</span>
+          </h1>
+
+          <p className="text-[19px] text-[#6e6e73] max-w-[600px] mx-auto leading-relaxed mb-10">
+            Загрузите фото — получите готовую карточку с инфографикой для&nbsp;
+            <span className="text-[#1d1d1f] font-medium">Wildberries, Ozon</span> и&nbsp;
+            <span className="text-[#1d1d1f] font-medium">Яндекс.Маркет</span>.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/generator">
+              <button className="px-7 py-3 rounded-full bg-[#0071e3] text-white text-[17px] font-medium hover:bg-[#0077ed] transition-colors shadow-sm">
+                Попробовать бесплатно
+              </button>
+            </Link>
+            <Link href="/auth">
+              <button className="px-7 py-3 rounded-full bg-[#f5f5f7] text-[#1d1d1f] text-[17px] font-medium hover:bg-[#e8e8ed] transition-colors">
                 Войти в аккаунт
-              </Button>
-            </div>
-            
-            <div className="mt-10 flex items-center gap-4 text-sm text-muted-foreground font-medium">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-secondary flex items-center justify-center">
-                    <span className="text-[10px] text-primary">AI</span>
-                  </div>
-                ))}
-              </div>
-              <p>Уже создано более 100,000+ карточек</p>
-            </div>
-          </motion.div>
+              </button>
+            </Link>
+          </div>
 
-          {/* Visual/Image Content */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative lg:h-[600px] flex items-center justify-center"
-          >
-            <div className="relative w-full max-w-lg aspect-square animate-float">
-              {/* Decorative blur blob behind image */}
-              <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full mix-blend-multiply"></div>
-              <img
-                src={`${import.meta.env.BASE_URL}images/hero-graphic.png`}
-                alt="AI Card Generation Graphic"
-                className="w-full h-full object-contain relative z-10 drop-shadow-2xl"
-              />
-            </div>
-          </motion.div>
+          <p className="text-[13px] text-[#6e6e73] mt-5">
+            3 генерации бесплатно · Без привязки карты
+          </p>
+        </motion.div>
 
-        </div>
+        {/* Feature highlight cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+          className="mt-20 grid grid-cols-3 gap-4 max-w-2xl mx-auto"
+        >
+          {[
+            { label: "Wildberries", sub: "до 60 симв." },
+            { label: "Ozon", sub: "до 200 симв." },
+            { label: "Яндекс Маркет", sub: "до 150 симв." },
+          ].map(m => (
+            <div key={m.label} className="apple-card p-4 text-center">
+              <p className="text-[15px] font-semibold text-[#1d1d1f]">{m.label}</p>
+              <p className="text-[12px] text-[#6e6e73] mt-0.5">SEO-название {m.sub}</p>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
