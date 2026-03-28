@@ -116,9 +116,20 @@ export const api = {
   },
   admin: {
     stats: () =>
-      request<{ totalUsers: number; totalGenerations: number; doneGenerations: number }>("/admin/stats"),
+      request<{
+        totalUsers: number;
+        totalGenerations: number;
+        doneGenerations: number;
+        pendingGenerations: number;
+        totalReferrals: number;
+        newUsersToday: number;
+        newUsersWeek: number;
+        avgGenerationsPerUser: number;
+        successRate: number;
+        marketplaceStats: Array<{ marketplace: string; count: number }>;
+      }>("/admin/stats"),
     users: () =>
-      request<{ users: Array<{ id: number; email: string; isAdmin: boolean; bonusGenerations: number; referralCode: string; createdAt: string; generationCount: number }> }>("/admin/users"),
+      request<{ users: Array<{ id: number; email: string; isAdmin: boolean; freeGenerations: number; bonusGenerations: number; referralCode: string; referrerId: number | null; createdAt: string; generationCount: number; referralCount: number }> }>("/admin/users"),
     generations: () =>
       request<{ generations: Array<{ id: number; userId: number; marketplace: string | null; productName: string | null; price: string | null; status: string; createdAt: string }> }>("/admin/generations"),
     updateGenerations: (userId: number, bonusGenerations: number) =>

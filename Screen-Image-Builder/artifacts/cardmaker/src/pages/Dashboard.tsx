@@ -193,8 +193,8 @@ export default function Dashboard() {
           {[
             { icon: <Zap className="w-4 h-4" />, iconColor: "#4d9fff", label: "Бесплатных", value: user.isAdmin ? "∞" : user.freeGenerations, valColor: "#4d9fff" },
             { icon: <Gift className="w-4 h-4" />, iconColor: "#bf5af2", label: "Бонусных", value: user.isAdmin ? "∞" : user.bonusGenerations, valColor: "#bf5af2" },
-            { icon: <Image className="w-4 h-4" />, iconColor: "#30d158", label: "Карточек", value: generations.length, valColor: "white" },
-            { icon: <Users className="w-4 h-4" />, iconColor: "#ffd60a", label: "Друзей", value: referralCount, valColor: "white" },
+            { icon: <Image className="w-4 h-4" />, iconColor: "#30d158", label: "Карточек", value: generations.length, valColor: "#30d158" },
+            { icon: <Users className="w-4 h-4" />, iconColor: "#ffd60a", label: "Партнёров", value: referralCount, valColor: "#ffd60a" },
           ].map(s => (
             <div key={s.label} className="glass rounded-3xl p-5">
               <div className="w-9 h-9 rounded-2xl flex items-center justify-center mb-3" style={{ background: `${s.iconColor}18`, color: s.iconColor }}>
@@ -205,6 +205,80 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
+
+        {/* Infographics */}
+        {!gLoading && (generations.length > 0 || referralCount > 0) && (
+          <div className="glass rounded-3xl p-6">
+            <h2 className="text-[15px] font-semibold text-white/90 mb-5">Ваша активность</h2>
+            <div className="grid sm:grid-cols-2 gap-6">
+              {/* Cards infographic */}
+              <div className="flex items-center gap-5">
+                <div className="relative w-20 h-20 shrink-0">
+                  <svg viewBox="0 0 80 80" className="w-20 h-20 -rotate-90">
+                    <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="7" />
+                    <circle
+                      cx="40" cy="40" r="33" fill="none"
+                      stroke="#30d158" strokeWidth="7"
+                      strokeLinecap="round"
+                      strokeDasharray={`${Math.min(generations.length, 20) / 20 * 207} 207`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[18px] font-bold text-white">{generations.length}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[16px] font-semibold text-white/90">Карточки создані</p>
+                  <p className="text-[13px] text-white/40 mt-0.5 leading-relaxed">
+                    Вы создали <span className="text-[#30d158] font-semibold">{generations.length}</span> карточку товара
+                    {generations.length >= 20 && " — уже 20+!"}
+                  </p>
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    {[5, 10, 20].map(milestone => (
+                      <div key={milestone} className="flex items-center gap-2">
+                        <div className={cn("w-3 h-3 rounded-full border-2 shrink-0", generations.length >= milestone ? "bg-[#30d158] border-[#30d158]" : "border-white/20")} />
+                        <span className={cn("text-[12px]", generations.length >= milestone ? "text-[#30d158]" : "text-white/30")}>{milestone} карточек</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Partners infographic */}
+              <div className="flex items-center gap-5">
+                <div className="relative w-20 h-20 shrink-0">
+                  <svg viewBox="0 0 80 80" className="w-20 h-20 -rotate-90">
+                    <circle cx="40" cy="40" r="33" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="7" />
+                    <circle
+                      cx="40" cy="40" r="33" fill="none"
+                      stroke="#bf5af2" strokeWidth="7"
+                      strokeLinecap="round"
+                      strokeDasharray={`${Math.min(referralCount, 10) / 10 * 207} 207`}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[18px] font-bold text-white">{referralCount}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[16px] font-semibold text-white/90">Партнёры</p>
+                  <p className="text-[13px] text-white/40 mt-0.5 leading-relaxed">
+                    Вы пригласили <span className="text-[#bf5af2] font-semibold">{referralCount}</span> {referralCount === 1 ? "друга" : referralCount < 5 ? "друга" : "друзей"}
+                    {referralCount > 0 && <> и заработали <span className="text-[#bf5af2] font-semibold">+{bonusHistory.reduce((s, t) => s + t.amount, 0)}</span> бонусов</>}
+                  </p>
+                  <div className="mt-3 flex flex-col gap-1.5">
+                    {[1, 3, 5].map(milestone => (
+                      <div key={milestone} className="flex items-center gap-2">
+                        <div className={cn("w-3 h-3 rounded-full border-2 shrink-0", referralCount >= milestone ? "bg-[#bf5af2] border-[#bf5af2]" : "border-white/20")} />
+                        <span className={cn("text-[12px]", referralCount >= milestone ? "text-[#bf5af2]" : "text-white/30")}>{milestone} {milestone === 1 ? "партнёр" : "партнёра"} (+{milestone * 3} бонусов)</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Zero balance */}
         {!user.isAdmin && user.freeGenerations + user.bonusGenerations === 0 && (
