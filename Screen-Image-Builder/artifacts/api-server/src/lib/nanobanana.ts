@@ -52,26 +52,28 @@ const VARIANTS: VariantFn[] = [
     `Aspirational luxury feel, professional editorial photography.`,
 ];
 
-async function pollKieTask(taskId: string, timeoutMs = 120_000): Promise<string | null> {
+async function pollKieTask(taskId: string, timeoutMs = 180_000): Promise<string | null> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     await new Promise((r) => setTimeout(r, 5000));
     try {
-      const res = await fetch(`${KIE_AI_BASE}/jobs/record-info?taskId=${taskId}`, {
+      const res = await fetch(`${KIE_AI_BASE}/playground/recordInfo?taskId=${taskId}`, {
         headers: { Authorization: `Bearer ${KIE_AI_API_KEY}` },
       });
       if (!res.ok) continue;
       const data = (await res.json()) as any;
       const item = data?.data;
       if (!item) continue;
-      if (item.successFlag === 1) {
-        const urls: string[] = item.response?.result_urls ?? [];
+      if (item.state === "success") {
+        const resultJson = item.resultJson ? JSON.parse(item.resultJson) : null;
+        const urls: string[] = resultJson?.resultUrls ?? [];
         return urls[0] ?? null;
       }
-      if (item.successFlag === 2) {
-        console.error("KIE AI task failed:", JSON.stringify(item).slice(0, 200));
+      if (item.state === "fail") {
+        console.error("KIE AI task failed:", item.failMsg, item.failCode);
         return null;
       }
+      // states: waiting / queuing / generating — keep polling
     } catch (err) {
       console.error("KIE AI poll error:", err);
     }

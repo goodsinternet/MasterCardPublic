@@ -32,12 +32,20 @@ async function svgToPng(svgDataUrl: string): Promise<string> {
 }
 
 async function downloadAsPng(url: string, filename: string) {
-  const isSvg = url.startsWith("data:image/svg");
-  const pngUrl = isSvg ? await svgToPng(url) : url;
+  let href = url;
+  if (url.startsWith("data:image/svg")) {
+    href = await svgToPng(url);
+  } else if (url.startsWith("http")) {
+    // Fetch external URL via blob to force download
+    const res = await fetch(url);
+    const blob = await res.blob();
+    href = URL.createObjectURL(blob);
+  }
   const a = document.createElement("a");
-  a.href = pngUrl;
-  a.download = filename;
+  a.href = href;
+  a.download = filename.endsWith(".png") ? filename : filename + ".png";
   a.click();
+  if (href.startsWith("blob:")) URL.revokeObjectURL(href);
 }
 
 export default function Generator() {
