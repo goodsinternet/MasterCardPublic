@@ -360,8 +360,9 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       res.status(404).json({ error: "Пользователь не найден" });
       return;
     }
-    if (!user.isAdmin && user.bonusGenerations <= 0) {
-      res.status(403).json({ error: "Недостаточно генераций. Используйте реферальный код для получения бонусных генераций." });
+    const totalGenerations = user.isAdmin ? Infinity : user.bonusGenerations + user.freeGenerations;
+    if (!user.isAdmin && totalGenerations <= 0) {
+      res.status(403).json({ error: "Недостаточно генераций. Пригласите друга по реферальному коду для получения +3 бонусных генераций." });
       return;
     }
 
@@ -374,9 +375,15 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
     }).returning();
 
     if (!user.isAdmin) {
-      await db.update(usersTable)
-        .set({ bonusGenerations: sql`${usersTable.bonusGenerations} - 1` })
-        .where(eq(usersTable.id, userId));
+      if (user.bonusGenerations > 0) {
+        await db.update(usersTable)
+          .set({ bonusGenerations: sql`${usersTable.bonusGenerations} - 1` })
+          .where(eq(usersTable.id, userId));
+      } else {
+        await db.update(usersTable)
+          .set({ freeGenerations: sql`${usersTable.freeGenerations} - 1` })
+          .where(eq(usersTable.id, userId));
+      }
     }
 
     const aiResult = await analyzeImagesWithOpenAI(images, price ?? "", marketplace, productName, description);

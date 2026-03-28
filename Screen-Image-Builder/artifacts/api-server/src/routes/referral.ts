@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, usersTable, referralsTable, referralRewardsTable } from "@workspace/db";
+import { db, usersTable, referralsTable, bonusTransactionsTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
 
@@ -30,14 +30,11 @@ router.post("/apply", requireAuth as any, async (req: AuthRequest, res) => {
     }
 
     const existing = await db.select().from(referralsTable)
-      .where(and(
-        eq(referralsTable.referredId, userId),
-        eq(referralsTable.referrerId, referrer.id),
-      ))
+      .where(eq(referralsTable.referredId, userId))
       .limit(1);
 
     if (existing.length) {
-      res.status(400).json({ error: "Реферальный код уже был использован" });
+      res.status(400).json({ error: "Вы уже использовали реферальный код" });
       return;
     }
 
@@ -47,19 +44,17 @@ router.post("/apply", requireAuth as any, async (req: AuthRequest, res) => {
     }).returning();
 
     await db.update(usersTable)
-      .set({ bonusGenerations: sql`${usersTable.bonusGenerations} + 2` })
-      .where(eq(usersTable.id, userId));
-
-    await db.update(usersTable)
-      .set({ bonusGenerations: sql`${usersTable.bonusGenerations} + 1` })
+      .set({ bonusGenerations: sql`${usersTable.bonusGenerations} + 3` })
       .where(eq(usersTable.id, referrer.id));
 
-    await db.insert(referralRewardsTable).values([
-      { userId, type: "referred_bonus", amount: 2, sourceReferralId: referral.id },
-      { userId: referrer.id, type: "referrer_bonus", amount: 1, sourceReferralId: referral.id },
-    ]);
+    await db.insert(bonusTransactionsTable).values({
+      userId: referrer.id,
+      amount: 3,
+      source: "referral",
+      referralId: referral.id,
+    });
 
-    res.json({ success: true, message: "Реферальный код применён! +2 генерации добавлены" });
+    res.json({ success: true, message: "Реферальный код принят! Ваш партнёр получил +3 генерации" });
   } catch (err) {
     req.log.error({ err }, "Apply referral error");
     res.status(500).json({ error: "Ошибка применения кода" });

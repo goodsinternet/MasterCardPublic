@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, usersTable, generationsTable, referralsTable } from "@workspace/db";
-import { eq, count } from "drizzle-orm";
+import { db, usersTable, generationsTable, referralsTable, bonusTransactionsTable } from "@workspace/db";
+import { eq, count, desc } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
 
 const router = Router();
@@ -22,11 +22,17 @@ router.get("/", requireAuth as any, async (req: AuthRequest, res) => {
     const [referralData] = await db.select({ count: count() }).from(referralsTable)
       .where(eq(referralsTable.referrerId, userId));
 
+    const bonusHistory = await db.select().from(bonusTransactionsTable)
+      .where(eq(bonusTransactionsTable.userId, userId))
+      .orderBy(desc(bonusTransactionsTable.createdAt))
+      .limit(20);
+
     res.json({
       user: {
         id: user.id,
         email: user.email,
         referralCode: user.referralCode,
+        freeGenerations: user.freeGenerations,
         bonusGenerations: user.bonusGenerations,
         isAdmin: user.isAdmin,
       },
@@ -41,6 +47,12 @@ router.get("/", requireAuth as any, async (req: AuthRequest, res) => {
         createdAt: g.createdAt.toISOString(),
       })),
       referralCount: Number(referralData?.count ?? 0),
+      bonusHistory: bonusHistory.map(t => ({
+        id: t.id,
+        amount: t.amount,
+        source: t.source,
+        createdAt: t.createdAt.toISOString(),
+      })),
     });
   } catch (err) {
     req.log.error({ err }, "Get user error");

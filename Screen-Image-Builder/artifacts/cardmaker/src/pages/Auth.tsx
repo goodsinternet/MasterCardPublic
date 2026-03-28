@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { Star, Mail, Lock, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Link, useLocation, useSearch } from "wouter";
+import { Star, Mail, Lock, ArrowRight, Eye, EyeOff, Loader2, Gift } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
@@ -8,10 +8,13 @@ import { cn } from "@/lib/utils";
 type Mode = "login" | "register";
 
 export default function Auth() {
-  const [mode, setMode] = useState<Mode>("login");
+  const search = useSearch();
+  const refFromUrl = new URLSearchParams(search).get("ref") ?? "";
+
+  const [mode, setMode] = useState<Mode>(refFromUrl ? "register" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [referralCode, setReferralCode] = useState("");
+  const [referralCode, setReferralCode] = useState(refFromUrl.toUpperCase());
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -124,15 +127,25 @@ export default function Auth() {
               <label className="block text-sm font-medium mb-1.5">
                 Реферальный код <span className="text-muted-foreground font-normal">(необязательно)</span>
               </label>
-              <input
-                type="text"
-                value={referralCode}
-                onChange={e => setReferralCode(e.target.value.toUpperCase())}
-                placeholder="XXXXXX"
-                maxLength={6}
-                className="w-full px-4 py-2.5 rounded-xl border border-border/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white font-mono tracking-widest"
-              />
-              <p className="text-xs text-muted-foreground mt-1">+2 бонусные генерации при использовании кода</p>
+              <div className="relative">
+                {refFromUrl && <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />}
+                <input
+                  type="text"
+                  value={referralCode}
+                  onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                  placeholder="XXXXXX"
+                  maxLength={6}
+                  className={cn(
+                    "w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white font-mono tracking-widest",
+                    refFromUrl ? "pl-10 border-primary/40 bg-primary/5" : "border-border/50"
+                  )}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {refFromUrl
+                  ? "Реферальный код партнёра применён автоматически"
+                  : "Ваш партнёр получит +3 бонусные генерации за приглашение"}
+              </p>
             </div>
           )}
 

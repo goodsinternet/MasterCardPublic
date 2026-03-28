@@ -30,8 +30,16 @@ export interface UserProfile {
   id: number;
   email: string;
   referralCode: string;
+  freeGenerations: number;
   bonusGenerations: number;
   isAdmin?: boolean;
+}
+
+export interface BonusTransaction {
+  id: number;
+  amount: number;
+  source: string;
+  createdAt: string;
 }
 
 export interface GenerationItem {
@@ -80,7 +88,7 @@ export const api = {
   },
   user: {
     get: () =>
-      request<{ user: UserProfile; generations: GenerationItem[]; referralCount: number }>("/user"),
+      request<{ user: UserProfile; generations: GenerationItem[]; referralCount: number; bonusHistory: BonusTransaction[] }>("/user"),
   },
   generate: {
     create: (body: {

@@ -9,18 +9,18 @@ export const referralsTable = pgTable("referrals", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const referralRewardsTable = pgTable("referral_rewards", {
+export const bonusTransactionsTable = pgTable("bonus_transactions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
-  type: text("type").notNull(),
-  amount: integer("amount").notNull().default(1),
-  sourceReferralId: integer("source_referral_id"),
+  amount: integer("amount").notNull().default(3),
+  source: text("source").notNull().default("referral"),
+  referralId: integer("referral_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertReferralSchema = createInsertSchema(referralsTable).omit({ id: true, createdAt: true });
-export const insertReferralRewardSchema = createInsertSchema(referralRewardsTable).omit({ id: true, createdAt: true });
+export const insertBonusTransactionSchema = createInsertSchema(bonusTransactionsTable).omit({ id: true, createdAt: true });
 export type Referral = typeof referralsTable.$inferSelect;
-export type ReferralReward = typeof referralRewardsTable.$inferSelect;
+export type BonusTransaction = typeof bonusTransactionsTable.$inferSelect;
 export type InsertReferral = z.infer<typeof insertReferralSchema>;
-export type InsertReferralReward = z.infer<typeof insertReferralRewardSchema>;
+export type InsertBonusTransaction = z.infer<typeof insertBonusTransactionSchema>;

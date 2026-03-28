@@ -1,10 +1,21 @@
 import { Router } from "express";
-import { db, usersTable, sessionsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, usersTable, sessionsTable, referralsTable, bonusTransactionsTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 import { hashPassword, comparePassword, signToken, generateReferralCode } from "../lib/auth.js";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
 
 const router = Router();
+
+function userResponse(user: typeof usersTable.$inferSelect) {
+  return {
+    id: user.id,
+    email: user.email,
+    referralCode: user.referralCode,
+    freeGenerations: user.freeGenerations,
+    bonusGenerations: user.bonusGenerations,
+    isAdmin: user.isAdmin,
+  };
+}
 
 router.post("/register", async (req, res) => {
   try {
@@ -25,12 +36,14 @@ router.post("/register", async (req, res) => {
     const referralCode = generateReferralCode();
 
     let referrerId: number | undefined;
+    let referrerUser: typeof usersTable.$inferSelect | undefined;
     if (inputReferralCode) {
-      const referrer = await db.select().from(usersTable)
+      const [referrer] = await db.select().from(usersTable)
         .where(eq(usersTable.referralCode, inputReferralCode.toUpperCase()))
         .limit(1);
-      if (referrer.length) {
-        referrerId = referrer[0].id;
+      if (referrer) {
+        referrerId = referrer.id;
+        referrerUser = referrer;
       }
     }
 
@@ -39,23 +52,33 @@ router.post("/register", async (req, res) => {
       passwordHash,
       referralCode,
       referrerId,
-      bonusGenerations: 3,
+      freeGenerations: 3,
+      bonusGenerations: 0,
     }).returning();
+
+    if (referrerUser) {
+      const [referral] = await db.insert(referralsTable).values({
+        referrerId: referrerUser.id,
+        referredId: user.id,
+      }).returning();
+
+      await db.update(usersTable)
+        .set({ bonusGenerations: sql`${usersTable.bonusGenerations} + 3` })
+        .where(eq(usersTable.id, referrerUser.id));
+
+      await db.insert(bonusTransactionsTable).values({
+        userId: referrerUser.id,
+        amount: 3,
+        source: "referral",
+        referralId: referral.id,
+      });
+    }
 
     const token = signToken(user.id);
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await db.insert(sessionsTable).values({ userId: user.id, token, expiresAt });
 
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        referralCode: user.referralCode,
-        bonusGenerations: user.bonusGenerations,
-        isAdmin: user.isAdmin,
-      },
-    });
+    res.json({ token, user: userResponse(user) });
   } catch (err) {
     req.log.error({ err }, "Register error");
     res.status(500).json({ error: "Ошибка регистрации" });
@@ -86,16 +109,7 @@ router.post("/login", async (req, res) => {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     await db.insert(sessionsTable).values({ userId: user.id, token, expiresAt });
 
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        referralCode: user.referralCode,
-        bonusGenerations: user.bonusGenerations,
-        isAdmin: user.isAdmin,
-      },
-    });
+    res.json({ token, user: userResponse(user) });
   } catch (err) {
     req.log.error({ err }, "Login error");
     res.status(500).json({ error: "Ошибка входа" });

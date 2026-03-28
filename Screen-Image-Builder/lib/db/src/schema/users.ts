@@ -8,7 +8,8 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash"),
   referralCode: text("referral_code").notNull().unique(),
   referrerId: integer("referrer_id"),
-  bonusGenerations: integer("bonus_generations").notNull().default(3),
+  freeGenerations: integer("free_generations").notNull().default(3),
+  bonusGenerations: integer("bonus_generations").notNull().default(0),
   isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
