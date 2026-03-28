@@ -164,53 +164,53 @@ function feat(features: string[], i: number, fallback: string): string {
   return features[i]?.trim() || fallback;
 }
 
-// Odd-indexed variants = infographic cards with Russian text overlays
-// Even-indexed variants = clean lifestyle product photos (no text)
 const INFOGRAPHIC_VARIANTS: VariantFn[] = [
-  // 0 — LIFESTYLE: warm cozy indoor scene, no text
+  // 0 — Pure white studio: isolated product on perfect white background
   (name, _mp, _features) =>
-    `Premium product lifestyle photography, square format. Product: ${name}. ` +
-    `Scene: product placed on a wooden table or shelf in a bright cozy interior. ` +
-    `Complementary props nearby: ceramic mug, open book, small plant. Soft warm natural window light, shallow depth of field. ` +
-    `NO text, NO labels, NO logos, NO overlay graphics. ` +
-    `Studio-quality, photorealistic, ultra high resolution.`,
+    `Professional commercial product photography of ${name}. ` +
+    `Pure white seamless background, perfect studio lighting from multiple angles, no shadows. ` +
+    `Product centered, sharp focus, high-key lighting, commercial catalog style. ` +
+    `Ultra clean, no clutter, professional e-commerce photo. ` +
+    `No text, no graphics, no watermarks.`,
 
-  // 1 — INFOGRAPHIC: bold title top + lifestyle background + 3 feature badges bottom
+  // 1 — Infographic card: white bg + product top + feature icons below
   (name, mp, features) =>
-    `Square product card for ${mp} Russian marketplace. Style: professional Wildberries listing card. ` +
-    `LAYOUT — top: large bold Russian headline "${name}" on white semi-transparent strip (black text). ` +
-    `Center/background: product in a natural lifestyle scene matching the product category, bright daylight. ` +
-    `Bottom row: 3 rounded badge boxes each with a thin line icon and short bold Russian label: ` +
-    `"${feat(features, 0, "Высокое качество")}" | "${feat(features, 1, "Надёжный материал")}" | "${feat(features, 2, "Удобное применение")}". ` +
-    `Clean modern design, photorealistic, high resolution.`,
+    `Professional product infographic card for ${mp} marketplace listing. Square format, white background. ` +
+    `TOP HALF: product image with soft drop shadow, centered. ` +
+    `BOTTOM HALF: 3 feature icons in a row, each with label below: ` +
+    `icon 1 checkmark "✓ ${feat(features, 0, "Высокое качество")}", ` +
+    `icon 2 star "★ ${feat(features, 1, "Премиум материал")}", ` +
+    `icon 3 shield "⊕ ${feat(features, 2, "Гарантия качества")}". ` +
+    `Bold product title "${name}" at very top in dark navy blue. ` +
+    `Clean modern flat design, professional marketplace card.`,
 
-  // 2 — LIFESTYLE: clean minimal surface, soft gradient background, no text
+  // 2 — Dark luxury: product on dark gradient background with gold accents
   (name, _mp, _features) =>
-    `Premium product lifestyle photography, square format. Product: ${name}. ` +
-    `Scene: product resting on soft fabric or light textured surface (linen, marble, or concrete). ` +
-    `Background: blurred, soft neutral tones — warm beige, white, or sand gradient. ` +
-    `A laptop or minimalist wooden object partially visible in background. Soft diffused studio lighting. ` +
-    `NO text, NO labels, NO logos, NO overlay graphics. ` +
-    `Studio-quality, photorealistic, ultra high resolution.`,
+    `Luxury premium product photography of ${name}. ` +
+    `Dark background: deep navy blue to black gradient. ` +
+    `Product lit with dramatic rim lighting, golden hour glow, specular highlights. ` +
+    `Smoke or mist effect around the product base. Atmospheric, high-end luxury brand aesthetic. ` +
+    `Rich colors, deep contrast, magazine cover quality. No text.`,
 
-  // 3 — INFOGRAPHIC: full-bleed lifestyle photo + title top-left + vertical feature list bottom-right
+  // 3 — Benefits banner: colored bg + large product left + text list right
   (name, mp, features) =>
-    `Square product card for ${mp} Russian marketplace. Style: professional Ozon listing card. ` +
-    `LAYOUT — full-bleed lifestyle photo background matching product category (outdoor or cozy interior). ` +
-    `Top-left overlay: bold Russian title "${name}" in large white text with dark shadow. ` +
-    `Rating row below title: "★★★★★ 4.9 (578 отзывов)" in yellow/white. ` +
-    `Bottom-right: vertical list of 3 features with thin icons: ` +
-    `"— ${feat(features, 0, "Высокое качество")}", "— ${feat(features, 1, "Надёжный материал")}", "— ${feat(features, 2, "Удобное применение")}". ` +
-    `Premium feel, photorealistic, high resolution.`,
+    `Professional product card for ${mp} marketplace. Square format. ` +
+    `LEFT HALF: large product photo with white glow halo on light blue gradient background. ` +
+    `RIGHT HALF: white panel with product benefits list: ` +
+    `"✓ ${feat(features, 0, "Высокое качество")}" ` +
+    `"✓ ${feat(features, 1, "Надёжный материал")}" ` +
+    `"✓ ${feat(features, 2, "Удобное применение")}" ` +
+    `"★★★★★ Топ продаж". ` +
+    `Blue and white color scheme, bold clean typography, modern flat design. ` +
+    `Product name "${name}" in large bold text top right.`,
 
-  // 4 — LIFESTYLE: premium studio pedestal/surface, dramatic atmospheric background, no text
+  // 4 — Lifestyle context: product in natural real-world setting
   (name, _mp, _features) =>
-    `Premium product lifestyle photography, square format. Product: ${name}. ` +
-    `Scene: product placed on a minimalist concrete or stone pedestal. ` +
-    `Background: dreamy atmospheric scene matching product mood — soft sand dunes, misty forest, or blurred park. ` +
-    `Dramatic soft lighting with long shadows, premium feel. ` +
-    `NO text, NO labels, NO logos, NO overlay graphics. ` +
-    `Studio-quality, photorealistic, ultra high resolution.`,
+    `Lifestyle product photography of ${name} in real-world context. ` +
+    `Scene: product placed in a beautiful natural environment matching product category — ` +
+    `luxury bathroom counter with marble, elegant dressing table, or outdoor garden setting. ` +
+    `Warm cinematic lighting, golden bokeh background, depth of field. ` +
+    `Complementary lifestyle props around the product. Magazine-quality commercial photo. No text.`,
 ];
 
 const KIE_AI_BASE = "https://api.kie.ai/api/v1";
