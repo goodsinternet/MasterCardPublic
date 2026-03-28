@@ -28,6 +28,11 @@ export function Navbar() {
             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               Партнёрка
             </Link>
+            {user?.isAdmin && (
+              <Link href="/admin" className="text-sm font-medium text-violet-600 hover:text-violet-500 transition-colors">
+                Админ панель
+              </Link>
+            )}
           </nav>
 
           {/* Actions */}

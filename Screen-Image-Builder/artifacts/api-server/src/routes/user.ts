@@ -28,6 +28,7 @@ router.get("/", requireAuth as any, async (req: AuthRequest, res) => {
         email: user.email,
         referralCode: user.referralCode,
         bonusGenerations: user.bonusGenerations,
+        isAdmin: user.isAdmin,
       },
       generations: generations.map(g => ({
         id: g.id,

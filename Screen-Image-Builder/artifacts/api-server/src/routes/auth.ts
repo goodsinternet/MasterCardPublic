@@ -53,6 +53,7 @@ router.post("/register", async (req, res) => {
         email: user.email,
         referralCode: user.referralCode,
         bonusGenerations: user.bonusGenerations,
+        isAdmin: user.isAdmin,
       },
     });
   } catch (err) {
@@ -92,6 +93,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         referralCode: user.referralCode,
         bonusGenerations: user.bonusGenerations,
+        isAdmin: user.isAdmin,
       },
     });
   } catch (err) {

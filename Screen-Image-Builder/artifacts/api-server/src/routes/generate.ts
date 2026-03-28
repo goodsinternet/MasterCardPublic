@@ -356,7 +356,11 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
     const count = Math.min(Math.max(Number(imageCount) || 1, 1), 5);
 
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
-    if (!user || user.bonusGenerations <= 0) {
+    if (!user) {
+      res.status(404).json({ error: "Пользователь не найден" });
+      return;
+    }
+    if (!user.isAdmin && user.bonusGenerations <= 0) {
       res.status(403).json({ error: "Недостаточно генераций. Используйте реферальный код для получения бонусных генераций." });
       return;
     }
@@ -369,9 +373,11 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       status: "processing",
     }).returning();
 
-    await db.update(usersTable)
-      .set({ bonusGenerations: sql`${usersTable.bonusGenerations} - 1` })
-      .where(eq(usersTable.id, userId));
+    if (!user.isAdmin) {
+      await db.update(usersTable)
+        .set({ bonusGenerations: sql`${usersTable.bonusGenerations} - 1` })
+        .where(eq(usersTable.id, userId));
+    }
 
     const aiResult = await analyzeImagesWithOpenAI(images, price ?? "", marketplace, productName, description);
 

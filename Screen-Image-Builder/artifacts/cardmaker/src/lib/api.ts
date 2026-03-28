@@ -31,6 +31,7 @@ export interface UserProfile {
   email: string;
   referralCode: string;
   bonusGenerations: number;
+  isAdmin?: boolean;
 }
 
 export interface GenerationItem {
@@ -103,6 +104,19 @@ export const api = {
       request<{ success: boolean; message: string }>("/referral/apply", {
         method: "POST",
         body: JSON.stringify({ code }),
+      }),
+  },
+  admin: {
+    stats: () =>
+      request<{ totalUsers: number; totalGenerations: number; doneGenerations: number }>("/admin/stats"),
+    users: () =>
+      request<{ users: Array<{ id: number; email: string; isAdmin: boolean; bonusGenerations: number; referralCode: string; createdAt: string; generationCount: number }> }>("/admin/users"),
+    generations: () =>
+      request<{ generations: Array<{ id: number; userId: number; marketplace: string | null; productName: string | null; price: string | null; status: string; createdAt: string }> }>("/admin/generations"),
+    updateGenerations: (userId: number, bonusGenerations: number) =>
+      request<{ user: { id: number; email: string; bonusGenerations: number } }>(`/admin/users/${userId}/generations`, {
+        method: "PATCH",
+        body: JSON.stringify({ bonusGenerations }),
       }),
   },
 };
