@@ -21,22 +21,20 @@ const VARIANTS: VariantFn[] = [
     `badge RIGHT of product labeled "${feat(features, 1, "Материал")}", ` +
     `badge BELOW product center labeled "${feat(features, 2, "Размер")}". ` +
     `TITLE: bold dark brown Russian text "${name}" at very top, large font. ` +
-    `PRICE: "${price} руб." in very large bold dark font at bottom center. ` +
-    `Style: luxury premium, warm golden tones, no white background.`,
+    `Style: luxury premium, warm golden tones, no white background. No price text.`,
 
   // 1 — Dark neon: pitch black background, product with electric blue rim light, badges in a row at bottom
-  (name, _mp, features, price) =>
+  (name, _mp, features, _price) =>
     `Professional marketplace infographic card. Square 1:1. ` +
     `BACKGROUND: pitch black, pure dark with very subtle deep navy gradient. ` +
     `CENTER: product "${name}" floating in the middle with dramatic electric blue rim lighting, sharp edges glowing cyan/blue, studio lighting effect. ` +
     `BADGES: exactly 3 rectangular dark-glass pill badges with blue glowing border arranged in a HORIZONTAL ROW at the bottom — ` +
     `pill 1: "${feat(features, 0, "Качество")}", pill 2: "${feat(features, 1, "Материал")}", pill 3: "${feat(features, 2, "Размер")}". ` +
     `TITLE: bold white Russian text "${name}" at very top with subtle blue glow. ` +
-    `PRICE: "${price} руб." in large bold electric blue font at bottom right. ` +
-    `Style: tech luxury, dark mode, neon blue accents, no gold.`,
+    `Style: tech luxury, dark mode, neon blue accents, no gold. No price text.`,
 
   // 2 — White clean split: pure white left half product, right half text list
-  (name, mp, features, price) =>
+  (name, mp, features, _price) =>
     `Professional marketplace infographic card for ${mp}. Square 1:1. ` +
     `BACKGROUND: pure clean white. ` +
     `LAYOUT: vertical split — LEFT half has the product "${name}" photo large with minimal soft shadow on white. ` +
@@ -45,19 +43,17 @@ const VARIANTS: VariantFn[] = [
     `then a vertical list of 3 features each on its own row with a blue checkmark icon: ` +
     `"${feat(features, 0, "Качество")}", "${feat(features, 1, "Материал")}", "${feat(features, 2, "Размер")}", ` +
     `then "★★★★★ Топ продаж" in gold stars. ` +
-    `PRICE: "${price} руб." large bold dark blue at bottom of right panel. ` +
-    `Style: clean minimal modern, white and blue, corporate professional.`,
+    `Style: clean minimal modern, white and blue, corporate professional. No price text.`,
 
   // 3 — Vibrant lifestyle: deep purple/wine gradient, product hero, icons below in colored circles
-  (name, _mp, features, price) =>
+  (name, _mp, features, _price) =>
     `Professional marketplace infographic card. Square 1:1. ` +
     `BACKGROUND: deep rich purple to burgundy wine gradient (#4A0080 to #8B0000). ` +
     `CENTER: product "${name}" large and prominent, floating center-upper area with soft white glow halo and realistic shadow below. ` +
     `BADGES: exactly 3 small round white circles with a colored icon inside, arranged in a HORIZONTAL ROW at the bottom, each with Russian label underneath in white: ` +
     `circle 1 "${feat(features, 0, "Качество")}", circle 2 "${feat(features, 1, "Материал")}", circle 3 "${feat(features, 2, "Размер")}". ` +
     `TITLE: bold white Russian text "${name}" at top center, large readable font. ` +
-    `PRICE: "${price} руб." in large bold white font with golden underline at very bottom. ` +
-    `Style: bold vibrant premium, purple-wine palette, white text, no gold background.`,
+    `Style: bold vibrant premium, purple-wine palette, white text, no gold background. No price text.`,
 ];
 
 async function pollKieTask(taskId: string, timeoutMs = 180_000): Promise<string | null> {
