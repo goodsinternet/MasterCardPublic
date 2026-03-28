@@ -158,17 +158,48 @@ async function analyzeImagesWithOpenAI(
   };
 }
 
-const INFOGRAPHIC_VARIANTS = [
-  (name: string, mp: string) =>
-    `E-commerce product card for ${mp}. Product: ${name}. Natural lifestyle environment matching the product. Infographic overlay: dimensions and size chart with arrows and measurement labels. Bold typography, clean modern layout. Photorealistic, high quality.`,
-  (name: string, mp: string) =>
-    `E-commerce product card for ${mp}. Product: ${name}. Product in use in a natural everyday setting. Infographic overlay: top 3 key benefits as icon badges with short text, highlight boxes. Vivid colors, modern design. Photorealistic, high quality.`,
-  (name: string, mp: string) =>
-    `E-commerce product card for ${mp}. Product: ${name}. Aesthetic lifestyle scene, product surrounded by complementary objects. Infographic overlay: materials and composition callouts, texture details, quality icons. Premium feel. Photorealistic, high quality.`,
-  (name: string, mp: string) =>
-    `E-commerce product card for ${mp}. Product: ${name}. Dynamic scene with product in action. Infographic overlay: step-by-step usage instructions numbered 1-3, how-to icons, application scenarios. Clear modern layout. Photorealistic, high quality.`,
-  (name: string, mp: string) =>
-    `E-commerce product card for ${mp}. Product: ${name}. Stylish natural environment matching product mood. Infographic overlay: customer rating stars 4.9★, statistics badge "10 000+ отзывов", trust icons, guarantee badge. Confident premium design. Photorealistic, high quality.`,
+type VariantFn = (name: string, mp: string, features: string[]) => string;
+
+function feat(features: string[], i: number, fallback: string): string {
+  return features[i]?.trim() || fallback;
+}
+
+const INFOGRAPHIC_VARIANTS: VariantFn[] = [
+  (name, mp, features) =>
+    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
+    `LAYOUT — top section: large bold Russian headline text "${name}" on semi-transparent dark rounded rectangle. ` +
+    `Center: product photo large and prominent, natural lifestyle background (outdoor scene matching the product category, golden hour light). ` +
+    `Bottom: 3 feature badge boxes with small icons and bold Russian labels: box1="${feat(features, 0, "Высокое качество")}", box2="${feat(features, 1, "Надёжный материал")}", box3="${feat(features, 2, "Удобное использование")}". ` +
+    `Clean modern design, photorealistic, high resolution.`,
+
+  (name, mp, features) =>
+    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
+    `LAYOUT — top: bold black uppercase Russian title "${name}" on white or light background strip. ` +
+    `Center: product in use in natural lifestyle scene (real-world environment, bright daylight). ` +
+    `Bottom row: 3 icon+text feature blocks with thin line icons and Russian captions: "${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Надёжный материал")}", "${feat(features, 2, "Удобное применение")}". ` +
+    `Clean typography, vivid colors, photorealistic, high resolution.`,
+
+  (name, mp, features) =>
+    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
+    `LAYOUT — top left: product title "${name}" in large bold Russian font, white text on dark overlay. ` +
+    `Full bleed: dynamic lifestyle action photo background (product category environment). ` +
+    `Right side or bottom: vertical list of 3 features with small icons: "✓ ${feat(features, 0, "Высокое качество")}", "✓ ${feat(features, 1, "Надёжный материал")}", "✓ ${feat(features, 2, "Удобное применение")}". ` +
+    `Bold, energetic, photorealistic, high resolution.`,
+
+  (name, mp, features) =>
+    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
+    `LAYOUT — gradient background (matching product colors), product hero image large in center. ` +
+    `Top: Russian product name "${name}" in bold. ` +
+    `2 feature callout boxes on left side with icons: "${feat(features, 0, "Высокое качество")}" and "${feat(features, 1, "Надёжный материал")}". ` +
+    `1 callout on right: "${feat(features, 2, "Удобное применение")}". ` +
+    `Arrows pointing to product parts. Clean infographic style, photorealistic product, high resolution.`,
+
+  (name, mp, features) =>
+    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
+    `LAYOUT — top left: Russian title "${name}", rating row "★★★★★ 4.9 (578 отзывов)". ` +
+    `Background: beautiful lifestyle outdoor scene matching product category. ` +
+    `Bottom: 3 feature rows with small icons: "— ${feat(features, 0, "Высокое качество")}", "— ${feat(features, 1, "Надёжный материал")}", "— ${feat(features, 2, "Удобное применение")}". ` +
+    `Premium feel, marketplace-ready, photorealistic, high resolution.`,
 ];
 
 const KIE_AI_BASE = "https://api.kie.ai/api/v1";
@@ -206,6 +237,7 @@ async function generateCardImageWithKieAI(
   productName: string,
   marketplace: string,
   variantIndex: number = 0,
+  features: string[] = [],
 ): Promise<string | null> {
   if (!KIE_AI_API_KEY) return null;
 
@@ -231,7 +263,7 @@ async function generateCardImageWithKieAI(
     };
     const marketplaceName = marketplaceNames[marketplace] ?? "marketplace";
     const idx = variantIndex % INFOGRAPHIC_VARIANTS.length;
-    const prompt = INFOGRAPHIC_VARIANTS[idx](productName, marketplaceName);
+    const prompt = INFOGRAPHIC_VARIANTS[idx](productName, marketplaceName, features);
 
     const createRes = await fetch(`${KIE_AI_BASE}/jobs/createTask`, {
       method: "POST",
@@ -279,9 +311,10 @@ async function generateMultipleCardImages(
   productName: string,
   marketplace: string,
   count: number,
+  features: string[] = [],
 ): Promise<string[]> {
   const tasks = Array.from({ length: count }, (_, i) =>
-    generateCardImageWithKieAI(imageBase64, productName, marketplace, i),
+    generateCardImageWithKieAI(imageBase64, productName, marketplace, i, features),
   );
   const results = await Promise.all(tasks);
   return results.filter((url): url is string => url !== null);
@@ -331,8 +364,15 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
 
     const aiResult = await analyzeImagesWithOpenAI(images, price ?? "", marketplace, productName, description);
 
+    // Extract top 3 key features from characteristics for infographic badges
+    const featureLines: string[] = (aiResult.characteristics ?? "")
+      .split(/\n|;/)
+      .map((s: string) => s.replace(/^[-–•*\d.]+\s*/, "").trim())
+      .filter((s: string) => s.length > 3 && s.length < 60)
+      .slice(0, 3);
+
     // Generate multiple card images in parallel, each with a different infographic variant
-    const imageUrls = await generateMultipleCardImages(images[0], aiResult.name, marketplace, count);
+    const imageUrls = await generateMultipleCardImages(images[0], aiResult.name, marketplace, count, featureLines);
 
     const outputImageUrl = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
 
