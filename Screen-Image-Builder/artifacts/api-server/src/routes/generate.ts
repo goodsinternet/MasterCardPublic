@@ -1,15 +1,13 @@
 import { Router } from "express";
-import { randomUUID } from "crypto";
 import { db, usersTable, generationsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
-import { tmpImageStore } from "./tmpImages.js";
 import OpenAI from "openai";
+import { generateInfographicSvg } from "../lib/infographic-svg.js";
 
 const router = Router();
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const KIE_AI_API_KEY = process.env.KIE_AI_API_KEY;
 
 function buildMarketplacePrompt(
   marketplace: string,
@@ -158,178 +156,24 @@ async function analyzeImagesWithOpenAI(
   };
 }
 
-type VariantFn = (name: string, mp: string, features: string[]) => string;
-
-function feat(features: string[], i: number, fallback: string): string {
-  return features[i]?.trim() || fallback;
-}
-
-const INFOGRAPHIC_VARIANTS: VariantFn[] = [
-  // 0 — Pure white studio: isolated product on perfect white background
-  (name, _mp, _features) =>
-    `Professional commercial product photography of ${name}. ` +
-    `Pure white seamless background, perfect studio lighting from multiple angles, no shadows. ` +
-    `Product centered, sharp focus, high-key lighting, commercial catalog style. ` +
-    `Ultra clean, no clutter, professional e-commerce photo. ` +
-    `No text, no graphics, no watermarks.`,
-
-  // 1 — Infographic card: white bg + product top + feature icons below
-  (name, mp, features) =>
-    `Professional product infographic card for ${mp} marketplace listing. Square format, white background. ` +
-    `TOP HALF: product image with soft drop shadow, centered. ` +
-    `BOTTOM HALF: 3 feature icons in a row, each with label below: ` +
-    `icon 1 checkmark "✓ ${feat(features, 0, "Высокое качество")}", ` +
-    `icon 2 star "★ ${feat(features, 1, "Премиум материал")}", ` +
-    `icon 3 shield "⊕ ${feat(features, 2, "Гарантия качества")}". ` +
-    `Bold product title "${name}" at very top in dark navy blue. ` +
-    `Clean modern flat design, professional marketplace card.`,
-
-  // 2 — Dark luxury: product on dark gradient background with gold accents
-  (name, _mp, _features) =>
-    `Luxury premium product photography of ${name}. ` +
-    `Dark background: deep navy blue to black gradient. ` +
-    `Product lit with dramatic rim lighting, golden hour glow, specular highlights. ` +
-    `Smoke or mist effect around the product base. Atmospheric, high-end luxury brand aesthetic. ` +
-    `Rich colors, deep contrast, magazine cover quality. No text.`,
-
-  // 3 — Benefits banner: colored bg + large product left + text list right
-  (name, mp, features) =>
-    `Professional product card for ${mp} marketplace. Square format. ` +
-    `LEFT HALF: large product photo with white glow halo on light blue gradient background. ` +
-    `RIGHT HALF: white panel with product benefits list: ` +
-    `"✓ ${feat(features, 0, "Высокое качество")}" ` +
-    `"✓ ${feat(features, 1, "Надёжный материал")}" ` +
-    `"✓ ${feat(features, 2, "Удобное применение")}" ` +
-    `"★★★★★ Топ продаж". ` +
-    `Blue and white color scheme, bold clean typography, modern flat design. ` +
-    `Product name "${name}" in large bold text top right.`,
-
-  // 4 — Lifestyle context: product in natural real-world setting
-  (name, _mp, _features) =>
-    `Lifestyle product photography of ${name} in real-world context. ` +
-    `Scene: product placed in a beautiful natural environment matching product category — ` +
-    `luxury bathroom counter with marble, elegant dressing table, or outdoor garden setting. ` +
-    `Warm cinematic lighting, golden bokeh background, depth of field. ` +
-    `Complementary lifestyle props around the product. Magazine-quality commercial photo. No text.`,
-];
-
-const KIE_AI_BASE = "https://api.kie.ai/api/v1";
-
-async function pollKieTask(taskId: string, timeoutMs = 300_000): Promise<string | null> {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    await new Promise(r => setTimeout(r, 5000));
-    try {
-      const res = await fetch(`${KIE_AI_BASE}/jobs/record-info?taskId=${taskId}`, {
-        headers: { Authorization: `Bearer ${KIE_AI_API_KEY}` },
-      });
-      if (!res.ok) continue;
-      const data = await res.json() as any;
-      const item = data?.data;
-      if (!item) continue;
-      if (item.successFlag === 1) {
-        const urls: string[] = item.response?.result_urls ?? [];
-        return urls[0] ?? null;
-      }
-      if (item.successFlag === 2) {
-        console.error("KIE AI task failed:", item);
-        return null;
-      }
-    } catch (err) {
-      console.error("KIE AI poll error:", err);
-    }
-  }
-  console.error("KIE AI task timed out:", taskId);
-  return null;
-}
-
-async function generateCardImageWithKieAI(
-  imageBase64: string,
-  productName: string,
-  marketplace: string,
-  variantIndex: number = 0,
-  features: string[] = [],
-): Promise<string | null> {
-  if (!KIE_AI_API_KEY) return null;
-
-  const uuid = randomUUID();
-  const TTL = 15 * 60 * 1000;
-  tmpImageStore.set(uuid, { data: imageBase64, mime: "image/jpeg", expiresAt: Date.now() + TTL });
-
-  const replitDomains = process.env.REPLIT_DOMAINS;
-  const devDomain = process.env.REPLIT_DEV_DOMAIN;
-  const domain = replitDomains ? replitDomains.split(",")[0].trim() : devDomain;
-  if (!domain) {
-    console.error("No domain env var set (REPLIT_DOMAINS or REPLIT_DEV_DOMAIN)");
-    tmpImageStore.delete(uuid);
-    return null;
-  }
-
-  const imageUrl = `https://${domain}/api/tmp/${uuid}`;
-
-  try {
-    const marketplaceNames: Record<string, string> = {
-      wildberries: "Wildberries",
-      ozon: "Ozon",
-      yandex: "Яндекс Маркет",
-      universal: "marketplace",
-    };
-    const marketplaceName = marketplaceNames[marketplace] ?? "marketplace";
-    const idx = variantIndex % INFOGRAPHIC_VARIANTS.length;
-    const prompt = INFOGRAPHIC_VARIANTS[idx](productName, marketplaceName, features);
-
-    const createRes = await fetch(`${KIE_AI_BASE}/jobs/createTask`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${KIE_AI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "nano-banana-pro",
-        input: {
-          prompt,
-          image_input: [imageUrl],
-          aspect_ratio: "1:1",
-          resolution: "1K",
-        },
-      }),
-    });
-
-    if (!createRes.ok) {
-      const text = await createRes.text();
-      console.error("KIE AI createTask error:", createRes.status, text);
-      return null;
-    }
-
-    const createData = await createRes.json() as any;
-    const taskId = createData?.data?.taskId;
-    if (!taskId) {
-      console.error("KIE AI: no taskId in response", createData);
-      return null;
-    }
-
-    const resultUrl = await pollKieTask(taskId);
-    return resultUrl;
-  } catch (err) {
-    console.error("KIE AI generation failed:", err);
-    return null;
-  } finally {
-    tmpImageStore.delete(uuid);
-  }
-}
-
-async function generateMultipleCardImages(
+function generateMultipleCardImages(
   imageBase64: string,
   productName: string,
   marketplace: string,
   count: number,
   features: string[] = [],
-): Promise<string[]> {
-  const tasks = Array.from({ length: count }, (_, i) =>
-    generateCardImageWithKieAI(imageBase64, productName, marketplace, i, features),
-  );
-  const results = await Promise.all(tasks);
-  return results.filter((url): url is string => url !== null);
+): string[] {
+  const marketplaceNames: Record<string, string> = {
+    wildberries: "Wildberries",
+    ozon: "Ozon",
+    yandex: "Яндекс Маркет",
+    universal: "Маркетплейс",
+  };
+  const mp = marketplaceNames[marketplace] ?? marketplace;
+  return Array.from({ length: count }, (_, i) => {
+    const svg = generateInfographicSvg({ productName, features, marketplace: mp, imageBase64, variantIndex: i });
+    return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  });
 }
 
 router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
@@ -396,8 +240,8 @@ router.post("/", requireAuth as any, async (req: AuthRequest, res) => {
       .filter((s: string) => s.length > 3 && s.length < 60)
       .slice(0, 3);
 
-    // Generate multiple card images in parallel, each with a different infographic variant
-    const imageUrls = await generateMultipleCardImages(images[0], aiResult.name, marketplace, count, featureLines);
+    // Generate SVG infographic cards — each variant with a different design
+    const imageUrls = generateMultipleCardImages(images[0], aiResult.name, marketplace, count, featureLines);
 
     const outputImageUrl = imageUrls.length > 0 ? JSON.stringify(imageUrls) : null;
 

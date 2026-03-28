@@ -277,7 +277,7 @@ export default function Generator() {
                       </div>
                       <div className="text-center">
                         <p className="text-[15px] font-semibold text-white/80">Создаю карточки…</p>
-                        <p className="text-[12px] text-white/35 mt-1">Это занимает около минуты</p>
+                        <p className="text-[12px] text-white/35 mt-1">Анализирую товар и формирую дизайн</p>
                       </div>
                     </motion.div>
                   ) : resultImages.length > 0 ? (
@@ -311,12 +311,12 @@ export default function Generator() {
                         </div>
                       )}
 
-                      <a href={resultImages[activeImageIndex]} download={`cardmaker-v${activeImageIndex + 1}.png`} target="_blank" rel="noreferrer" className="w-full py-2.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#6aaeff] transition-colors">
+                      <button onClick={() => { const url = resultImages[activeImageIndex]; const isSvg = url.startsWith("data:image/svg"); const ext = isSvg ? "svg" : "jpg"; const a = document.createElement("a"); a.href = url; a.download = `cardmaker-v${activeImageIndex + 1}.${ext}`; a.click(); }} className="w-full py-2.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium flex items-center justify-center gap-2 hover:bg-[#6aaeff] transition-colors">
                         <Download className="w-4 h-4" />
                         Скачать{resultImages.length > 1 ? ` вариант ${activeImageIndex + 1}` : ""}
-                      </a>
+                      </button>
                       {resultImages.length > 1 && (
-                        <button onClick={async () => { for (let i = 0; i < resultImages.length; i++) { const a = document.createElement("a"); a.href = resultImages[i]; a.download = `cardmaker-v${i + 1}.png`; a.target = "_blank"; a.click(); await new Promise(r => setTimeout(r, 300)); } }} className="w-full py-2.5 rounded-full border border-white/[0.1] text-[14px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.05] transition-colors flex items-center justify-center gap-2">
+                        <button onClick={async () => { for (let i = 0; i < resultImages.length; i++) { const url = resultImages[i]; const isSvg = url.startsWith("data:image/svg"); const ext = isSvg ? "svg" : "jpg"; const a = document.createElement("a"); a.href = url; a.download = `cardmaker-v${i + 1}.${ext}`; a.click(); await new Promise(r => setTimeout(r, 300)); } }} className="w-full py-2.5 rounded-full border border-white/[0.1] text-[14px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.05] transition-colors flex items-center justify-center gap-2">
                           <Download className="w-4 h-4" />
                           Скачать все ({resultImages.length})
                         </button>
