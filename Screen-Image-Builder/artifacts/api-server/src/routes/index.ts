@@ -4,6 +4,7 @@ import authRouter from "./auth.js";
 import userRouter from "./user.js";
 import generateRouter from "./generate.js";
 import referralRouter from "./referral.js";
+import tmpImagesRouter from "./tmpImages.js";
 
 const router: IRouter = Router();
 
@@ -13,5 +14,6 @@ router.use("/user", userRouter);
 router.use("/generate", generateRouter);
 router.use("/generations", generateRouter);
 router.use("/referral", referralRouter);
+router.use("/tmp", tmpImagesRouter);
 
 export default router;

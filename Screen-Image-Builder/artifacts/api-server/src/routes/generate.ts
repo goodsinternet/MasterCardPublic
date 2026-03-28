@@ -1,7 +1,9 @@
 import { Router } from "express";
+import { randomUUID } from "crypto";
 import { db, usersTable, generationsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
+import { tmpImageStore } from "./tmpImages.js";
 import OpenAI from "openai";
 
 const router = Router();
@@ -158,16 +160,46 @@ async function analyzeImagesWithOpenAI(
 
 const INFOGRAPHIC_VARIANTS = [
   (name: string, mp: string) =>
-    `E-commerce product photo for ${mp}. Product: ${name}. Natural lifestyle environment, real-world setting matching the product category. Overlay infographic: dimensions and size chart with arrows and labels, measurement callouts. Bold typography, clean layout. High quality, photorealistic.`,
+    `E-commerce product card for ${mp}. Product: ${name}. Natural lifestyle environment matching the product. Infographic overlay: dimensions and size chart with arrows and measurement labels. Bold typography, clean modern layout. Photorealistic, high quality.`,
   (name: string, mp: string) =>
-    `E-commerce product photo for ${mp}. Product: ${name}. Natural lifestyle background, product in use in everyday setting. Overlay infographic: key benefits and features as icon badges with short text, highlight boxes showing top 3 advantages. Vivid colors, modern design. High quality, photorealistic.`,
+    `E-commerce product card for ${mp}. Product: ${name}. Product in use in a natural everyday setting. Infographic overlay: top 3 key benefits as icon badges with short text, highlight boxes. Vivid colors, modern design. Photorealistic, high quality.`,
   (name: string, mp: string) =>
-    `E-commerce product photo for ${mp}. Product: ${name}. Aesthetic lifestyle scene, product surrounded by complementary objects in natural environment. Overlay infographic: materials and composition details, texture close-ups with callout lines, quality icons. Premium feel, high quality, photorealistic.`,
+    `E-commerce product card for ${mp}. Product: ${name}. Aesthetic lifestyle scene, product surrounded by complementary objects. Infographic overlay: materials and composition callouts, texture details, quality icons. Premium feel. Photorealistic, high quality.`,
   (name: string, mp: string) =>
-    `E-commerce product photo for ${mp}. Product: ${name}. Dynamic lifestyle context, product shown in action or in use. Overlay infographic: numbered step-by-step usage instructions, how-to icons, application scenarios. Clear and modern layout. High quality, photorealistic.`,
+    `E-commerce product card for ${mp}. Product: ${name}. Dynamic scene with product in action. Infographic overlay: step-by-step usage instructions numbered 1-3, how-to icons, application scenarios. Clear modern layout. Photorealistic, high quality.`,
   (name: string, mp: string) =>
-    `E-commerce product photo for ${mp}. Product: ${name}. Stylish natural environment matching product mood. Overlay infographic: customer rating stars, key statistics (e.g. "10 000+ reviews", "4.9★"), trust badges, warranty or guarantee icons. Confident and premium design. High quality, photorealistic.`,
+    `E-commerce product card for ${mp}. Product: ${name}. Stylish natural environment matching product mood. Infographic overlay: customer rating stars 4.9★, statistics badge "10 000+ отзывов", trust icons, guarantee badge. Confident premium design. Photorealistic, high quality.`,
 ];
+
+const KIE_AI_BASE = "https://api.kie.ai/api/v1";
+
+async function pollKieTask(taskId: string, timeoutMs = 300_000): Promise<string | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await new Promise(r => setTimeout(r, 5000));
+    try {
+      const res = await fetch(`${KIE_AI_BASE}/jobs/record-info?taskId=${taskId}`, {
+        headers: { Authorization: `Bearer ${KIE_AI_API_KEY}` },
+      });
+      if (!res.ok) continue;
+      const data = await res.json() as any;
+      const item = data?.data;
+      if (!item) continue;
+      if (item.successFlag === 1) {
+        const urls: string[] = item.response?.result_urls ?? [];
+        return urls[0] ?? null;
+      }
+      if (item.successFlag === 2) {
+        console.error("KIE AI task failed:", item);
+        return null;
+      }
+    } catch (err) {
+      console.error("KIE AI poll error:", err);
+    }
+  }
+  console.error("KIE AI task timed out:", taskId);
+  return null;
+}
 
 async function generateCardImageWithKieAI(
   imageBase64: string,
@@ -176,6 +208,19 @@ async function generateCardImageWithKieAI(
   variantIndex: number = 0,
 ): Promise<string | null> {
   if (!KIE_AI_API_KEY) return null;
+
+  const uuid = randomUUID();
+  const TTL = 15 * 60 * 1000;
+  tmpImageStore.set(uuid, { data: imageBase64, mime: "image/jpeg", expiresAt: Date.now() + TTL });
+
+  const domain = process.env.REPLIT_DEV_DOMAIN;
+  if (!domain) {
+    console.error("REPLIT_DEV_DOMAIN not set");
+    tmpImageStore.delete(uuid);
+    return null;
+  }
+
+  const imageUrl = `https://${domain}/api/tmp/${uuid}`;
 
   try {
     const marketplaceNames: Record<string, string> = {
@@ -188,32 +233,44 @@ async function generateCardImageWithKieAI(
     const idx = variantIndex % INFOGRAPHIC_VARIANTS.length;
     const prompt = INFOGRAPHIC_VARIANTS[idx](productName, marketplaceName);
 
-    const response = await fetch("https://api.kie.ai/v1/image/generate", {
+    const createRes = await fetch(`${KIE_AI_BASE}/jobs/createTask`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${KIE_AI_API_KEY}`,
+        Authorization: `Bearer ${KIE_AI_API_KEY}`,
       },
       body: JSON.stringify({
-        prompt,
-        image: imageBase64,
         model: "nano-banana-pro",
-        width: 1024,
-        height: 1024,
+        input: {
+          prompt,
+          image_input: [imageUrl],
+          aspect_ratio: "1:1",
+          resolution: "1K",
+          output_format: "jpeg",
+        },
       }),
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("KIE AI error:", response.status, text);
+    if (!createRes.ok) {
+      const text = await createRes.text();
+      console.error("KIE AI createTask error:", createRes.status, text);
       return null;
     }
 
-    const data = await response.json() as any;
-    return data.imageUrl ?? data.url ?? data.image_url ?? null;
+    const createData = await createRes.json() as any;
+    const taskId = createData?.data?.taskId;
+    if (!taskId) {
+      console.error("KIE AI: no taskId in response", createData);
+      return null;
+    }
+
+    const resultUrl = await pollKieTask(taskId);
+    return resultUrl;
   } catch (err) {
     console.error("KIE AI generation failed:", err);
     return null;
+  } finally {
+    tmpImageStore.delete(uuid);
   }
 }
 
