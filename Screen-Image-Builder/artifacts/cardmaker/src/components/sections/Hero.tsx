@@ -4,33 +4,18 @@ import { Link } from "wouter";
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080810]">
-      {/* Light rays — like in the reference */}
+      {/* Light rays */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Central glow orb */}
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-[radial-gradient(ellipse,_rgba(40,100,255,0.25)_0%,_transparent_70%)]" />
-
-        {/* Ray 1 — wide left */}
-        <div className="ray absolute top-0 left-1/2 -translate-x-1/2 w-[3px] h-[90vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(77,159,255,0.9) 0%, rgba(77,159,255,0) 100%)", transform: "translateX(-50%) rotate(-28deg)", transformOrigin: "top center" }} />
-        {/* Ray 2 */}
-        <div className="ray-2 absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-[85vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(100,180,255,0.7) 0%, rgba(100,180,255,0) 100%)", transform: "translateX(-50%) rotate(-14deg)", transformOrigin: "top center" }} />
-        {/* Ray 4 */}
-        <div className="ray-3 absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-[80vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(77,159,255,0.6) 0%, rgba(77,159,255,0) 100%)", transform: "translateX(-50%) rotate(14deg)", transformOrigin: "top center" }} />
-        {/* Ray 5 — wide right */}
-        <div className="ray-2 absolute top-0 left-1/2 -translate-x-1/2 w-[3px] h-[90vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(77,159,255,0.9) 0%, rgba(77,159,255,0) 100%)", transform: "translateX(-50%) rotate(28deg)", transformOrigin: "top center" }} />
-        {/* Ray 6 — far left subtle */}
-        <div className="ray-3 absolute top-0 left-1/2 -translate-x-1/2 w-[1.5px] h-[70vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(60,130,255,0.5) 0%, rgba(60,130,255,0) 100%)", transform: "translateX(-50%) rotate(-42deg)", transformOrigin: "top center" }} />
-        {/* Ray 7 — far right subtle */}
-        <div className="ray absolute top-0 left-1/2 -translate-x-1/2 w-[1.5px] h-[70vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(60,130,255,0.5) 0%, rgba(60,130,255,0) 100%)", transform: "translateX(-50%) rotate(42deg)", transformOrigin: "top center" }} />
-
-        {/* Horizontal glow band at top */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#4d9fff]/60 to-transparent" />
-        {/* Bottom ambient */}
+        {/* Fan of rays as a single conic gradient — no individual stripes */}
+        <div
+          className="ray absolute top-0 left-0 right-0 h-full"
+          style={{
+            background: "conic-gradient(from 270deg at 50% -10%, transparent 0deg, rgba(50,120,255,0.07) 12deg, rgba(77,159,255,0.18) 20deg, rgba(100,180,255,0.10) 28deg, transparent 38deg, transparent 322deg, rgba(100,180,255,0.10) 332deg, rgba(77,159,255,0.18) 340deg, rgba(50,120,255,0.07) 348deg, transparent 360deg)"
+          }}
+        />
+        {/* Deep ambient blue glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[520px]" style={{ background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(40,100,255,0.18) 0%, transparent 100%)" }} />
+        {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#080810] to-transparent" />
       </div>
 
@@ -58,7 +43,7 @@ export function Hero() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
             <Link href="/generator">
-              <button className="px-8 py-3.5 rounded-full bg-[#4d9fff] text-white text-[17px] font-semibold hover:bg-[#6aaeff] transition-all glow-blue shadow-[0_0_40px_rgba(77,159,255,0.4)]">
+              <button className="px-8 py-3.5 rounded-full bg-[#4d9fff] text-white text-[17px] font-semibold hover:bg-[#6aaeff] transition-all" style={{ boxShadow: "0 0 0 1px rgba(77,159,255,0.3), 0 0 32px rgba(77,159,255,0.45)" }}>
                 Попробовать бесплатно
               </button>
             </Link>
