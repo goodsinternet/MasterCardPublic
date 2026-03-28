@@ -97,7 +97,6 @@ export async function generateWithNanoBanana(
       ],
       generationConfig: {
         responseModalities: ["IMAGE"] as any,
-        aspectRatio: "1:1",
         temperature: 0.7,
         topP: 0.95,
       } as any,
