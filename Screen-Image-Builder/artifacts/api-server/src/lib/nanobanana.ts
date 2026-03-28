@@ -1,57 +1,83 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { randomUUID } from "crypto";
+import { tmpImageStore } from "../routes/tmpImages.js";
 
-const API_ENDPOINT = "https://vip.apiyi.com";
-const MODEL_NAME = "gemini-2.0-flash-preview-image-generation";
+const KIE_AI_BASE = "https://api.kie.ai/api/v1";
+const KIE_AI_API_KEY = process.env.KIE_AI_API_KEY;
 
 function feat(features: string[], i: number, fallback: string): string {
   return features[i]?.trim() || fallback;
 }
 
-function buildPrompt(
-  productName: string,
-  marketplace: string,
-  price: string,
-  features: string[],
-  variantIndex: number,
-): string {
-  const f0 = feat(features, 0, "Высокое качество");
-  const f1 = feat(features, 1, "Премиум материал");
-  const f2 = feat(features, 2, "Оригинальный продукт");
-  const v = variantIndex % 4;
+type VariantFn = (name: string, mp: string, features: string[], price: string) => string;
 
-  const base = `Создай профессиональную инфографику-карточку товара для маркетплейса ${marketplace}. Квадратный формат 1:1. Все тексты ТОЛЬКО на русском языке, чёткие и читаемые.
+const VARIANTS: VariantFn[] = [
+  // 0 — Gold luxury: product centered on golden gradient, feature badges around
+  (name, _mp, features, price) =>
+    `Premium product infographic card for marketplace. Square 1:1 format. ` +
+    `Warm golden gradient background (#F5D78E to #C8940A). ` +
+    `Product "${name}" large and centered with golden glow and realistic shadows. ` +
+    `3 circular badge icons around the product — translucent gold circles with icons and Russian labels: ` +
+    `"${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Премиум материал")}", "${feat(features, 2, "Оригинал")}". ` +
+    `Bold dark-brown Russian title "${name}" at very top. ` +
+    `Price "${price} руб." in large bold dark text at bottom. ` +
+    `Luxury premium aesthetic, no clutter, professional commercial design.`,
 
-ТОВАР: ${productName}
-ЦЕНА: ${price} руб.
-ХАРАКТЕРИСТИКИ: ${f0} | ${f1} | ${f2}
+  // 1 — Dark luxury: product on deep dark bg, gold accents, badges at bottom
+  (name, _mp, features, price) =>
+    `Luxury dark premium product card. Square 1:1 format. ` +
+    `Deep dark background — near-black with subtle deep blue gradient. ` +
+    `Product "${name}" dramatically lit with golden rim light, floating centered. ` +
+    `3 gold circular badges in a row at bottom with icons and Russian text labels: ` +
+    `"${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Надёжность")}", "${feat(features, 2, "Гарантия")}". ` +
+    `Bold gold Russian title "${name}" at top center. Price "${price} руб." gold text bottom right. ` +
+    `High-end luxury brand aesthetic, dramatic cinematic lighting.`,
 
-ОБЯЗАТЕЛЬНЫЕ ЭЛЕМЕНТЫ НА ИЗОБРАЖЕНИИ:
-- Крупный жирный заголовок с названием товара "${productName}" в верхней части
-- Сам товар занимает центральную часть карточки (большой, детальный, реалистичный)
-- 3 круглых значка-бейджа вокруг товара, каждый с иконкой и подписью на русском: "${f0}", "${f1}", "${f2}"
-- Все надписи должны быть чёткими, без размытия, без орфографических ошибок`;
+  // 2 — Infographic split: product left, features right, white/light bg
+  (name, mp, features, price) =>
+    `Professional product infographic banner for ${mp}. Square 1:1 format, white/light blue background. ` +
+    `LEFT HALF: large product "${name}" photo with soft white glow halo. ` +
+    `RIGHT HALF: clean white panel with: bold Russian product title at top, ` +
+    `feature list: "✓ ${feat(features, 0, "Высокое качество")}", "✓ ${feat(features, 1, "Премиум материал")}", "✓ ${feat(features, 2, "Удобное применение")}", "★★★★★ Топ продаж". ` +
+    `Price "${price} руб." large bold at bottom right. ` +
+    `Modern clean flat design, blue and white color scheme, professional marketplace card.`,
 
-  if (v === 0) {
-    return `${base}
+  // 3 — Lifestyle: product in real-world elegant setting, minimal text
+  (name, _mp, features, _price) =>
+    `Lifestyle commercial photography of product "${name}". Square format. ` +
+    `Beautiful real-world setting matching product category — marble counter, elegant interior, or natural outdoor scene. ` +
+    `Warm cinematic lighting, golden bokeh background, shallow depth of field. ` +
+    `Product prominently featured, magazine quality. ` +
+    `Minimal overlay: 3 small feature badges with Russian labels: ` +
+    `"${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Премиум")}", "${feat(features, 2, "Оригинал")}". ` +
+    `Aspirational luxury feel, professional editorial photography.`,
+];
 
-СТИЛЬ: Тёплый золотой градиентный фон (#F5D78E → #C8940A). Продукт с золотистым свечением. Бейджи — полупрозрачные круги с золотой окантовкой и тематическими иконками. Заголовок — тёмно-коричневый жирный текст сверху. Роскошный премиальный вид.`;
+async function pollKieTask(taskId: string, timeoutMs = 120_000): Promise<string | null> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await new Promise((r) => setTimeout(r, 5000));
+    try {
+      const res = await fetch(`${KIE_AI_BASE}/jobs/record-info?taskId=${taskId}`, {
+        headers: { Authorization: `Bearer ${KIE_AI_API_KEY}` },
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as any;
+      const item = data?.data;
+      if (!item) continue;
+      if (item.successFlag === 1) {
+        const urls: string[] = item.response?.result_urls ?? [];
+        return urls[0] ?? null;
+      }
+      if (item.successFlag === 2) {
+        console.error("KIE AI task failed:", JSON.stringify(item).slice(0, 200));
+        return null;
+      }
+    } catch (err) {
+      console.error("KIE AI poll error:", err);
+    }
   }
-
-  if (v === 1) {
-    return `${base}
-
-СТИЛЬ: Тёмный фон (почти чёрный, глубокий синий градиент). Продукт с драматической подсветкой — золотые блики. 3 бейджа снизу в ряд — золотые круги с иконками и текстом под ними. Заголовок — крупный золотой текст сверху. Люкс-эстетика.`;
-  }
-
-  if (v === 2) {
-    return `${base}
-
-СТИЛЬ: Лайфстайл-фон, подходящий товару (красивый интерьер/природа/студия). Продукт в красивом окружении с атмосферным освещением. Бейджи слева и справа от продукта — круги с иконкой сверху и текстом снизу. Заголовок сверху белым жирным текстом с тенью.`;
-  }
-
-  return `${base}
-
-СТИЛЬ: Чистый светлый фон (белый или нежный градиент). Продукт крупный в центре. 2 бейджа по бокам, 1 снизу по центру. Синие или тёмные акценты. Внизу цена "${price} руб." крупными цифрами. Современный минималистичный дизайн.`;
+  console.error("KIE AI task timed out after", timeoutMs / 1000, "s");
+  return null;
 }
 
 export async function generateWithNanoBanana(
@@ -62,62 +88,70 @@ export async function generateWithNanoBanana(
   features: string[],
   variantIndex: number,
 ): Promise<string | null> {
-  const apiKey = process.env.KIE_AI_API_KEY;
-  if (!apiKey) {
+  if (!KIE_AI_API_KEY) {
     console.error("KIE_AI_API_KEY not set");
     return null;
   }
 
+  const uuid = randomUUID();
+  const TTL = 15 * 60 * 1000;
+  const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+  tmpImageStore.set(uuid, { data: cleanBase64, mime: "image/jpeg", expiresAt: Date.now() + TTL });
+
+  const replitDomains = process.env.REPLIT_DOMAINS;
+  const devDomain = process.env.REPLIT_DEV_DOMAIN;
+  const domain = replitDomains ? replitDomains.split(",")[0].trim() : devDomain;
+  if (!domain) {
+    console.error("No domain env var (REPLIT_DOMAINS / REPLIT_DEV_DOMAIN)");
+    tmpImageStore.delete(uuid);
+    return null;
+  }
+
+  const imageUrl = `https://${domain}/api/tmp/${uuid}`;
+  const idx = variantIndex % VARIANTS.length;
+  const prompt = VARIANTS[idx](productName, marketplace, features, price);
+
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel(
-      { model: MODEL_NAME },
-      { apiEndpoint: API_ENDPOINT },
-    );
+    console.log(`🍌 NanoBanana variant ${variantIndex}: submitting task...`);
 
-    const prompt = buildPrompt(productName, marketplace, price, features, variantIndex);
-
-    const mimeType = imageBase64.startsWith("/9j/") ? "image/jpeg" : "image/png";
-    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
-
-    const result = await model.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              inlineData: {
-                mimeType,
-                data: cleanBase64,
-              },
-            },
-            { text: prompt },
-          ],
+    const createRes = await fetch(`${KIE_AI_BASE}/jobs/createTask`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${KIE_AI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "nano-banana-pro",
+        input: {
+          prompt,
+          image_input: [imageUrl],
+          aspect_ratio: "1:1",
+          resolution: "1K",
         },
-      ],
-      generationConfig: {
-        responseModalities: ["IMAGE"] as any,
-        temperature: 0.7,
-        topP: 0.95,
-      } as any,
+      }),
     });
 
-    const parts = result.response.candidates?.[0]?.content?.parts ?? [];
-    for (const part of parts) {
-      const inline = (part as any).inlineData;
-      if (inline?.mimeType?.startsWith("image/")) {
-        return `data:${inline.mimeType};base64,${inline.data}`;
-      }
+    if (!createRes.ok) {
+      const text = await createRes.text();
+      console.error("KIE AI createTask error:", createRes.status, text.slice(0, 300));
+      return null;
     }
 
-    console.error("NanoBanana: no image in response", JSON.stringify(result.response).slice(0, 300));
+    const createData = (await createRes.json()) as any;
+    const taskId = createData?.data?.taskId;
+    if (!taskId) {
+      console.error("KIE AI: no taskId in response", JSON.stringify(createData).slice(0, 200));
+      return null;
+    }
+
+    console.log(`🍌 NanoBanana variant ${variantIndex}: polling taskId=${taskId}...`);
+    const resultUrl = await pollKieTask(taskId);
+    if (resultUrl) console.log(`✅ NanaBanana variant ${variantIndex}: done`);
+    return resultUrl;
+  } catch (err) {
+    console.error("KIE AI generation failed:", err);
     return null;
-  } catch (err: any) {
-    let msg = err?.message ?? String(err);
-    if (msg.includes("401")) msg = "Неверный API-ключ KIE_AI_API_KEY";
-    if (msg.includes("402")) msg = "Недостаточно кредитов в KIE/APIYI";
-    if (msg.includes("429")) msg = "Превышен лимит запросов";
-    console.error("NanoBanana error:", msg);
-    return null;
+  } finally {
+    tmpImageStore.delete(uuid);
   }
 }
