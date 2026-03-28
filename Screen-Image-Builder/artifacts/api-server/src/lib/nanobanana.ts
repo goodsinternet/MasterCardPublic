@@ -11,45 +11,53 @@ function feat(features: string[], i: number, fallback: string): string {
 type VariantFn = (name: string, mp: string, features: string[], price: string) => string;
 
 const VARIANTS: VariantFn[] = [
-  // 0 — Gold luxury: product centered on golden gradient, feature badges around
+  // 0 — Gold luxury: golden gradient background, product center, 3 circular badges arranged triangle
   (name, _mp, features, price) =>
-    `Premium product infographic card for marketplace. Square 1:1 format. ` +
-    `Warm golden gradient background (#F5D78E to #C8940A). ` +
-    `Product "${name}" large and centered with golden glow and realistic shadows. ` +
-    `3 circular badge icons around the product — translucent gold circles with icons and Russian labels: ` +
-    `"${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Премиум материал")}", "${feat(features, 2, "Оригинал")}". ` +
-    `Bold dark-brown Russian title "${name}" at very top. ` +
-    `Price "${price} руб." in large bold dark text at bottom. ` +
-    `Luxury premium aesthetic, no clutter, professional commercial design.`,
+    `Professional marketplace infographic card. Square 1:1. ` +
+    `BACKGROUND: rich warm golden gradient from light gold (#F5D78E) at top to deep amber (#B8860B) at bottom. ` +
+    `CENTER: product "${name}" large, floating, realistic 3D with soft golden glow underneath. ` +
+    `BADGES: exactly 3 circular translucent gold badges with thin gold border and small icon inside — ` +
+    `badge LEFT of product labeled "${feat(features, 0, "Качество")}", ` +
+    `badge RIGHT of product labeled "${feat(features, 1, "Материал")}", ` +
+    `badge BELOW product center labeled "${feat(features, 2, "Размер")}". ` +
+    `TITLE: bold dark brown Russian text "${name}" at very top, large font. ` +
+    `PRICE: "${price} руб." in very large bold dark font at bottom center. ` +
+    `Style: luxury premium, warm golden tones, no white background.`,
 
-  // 1 — Dark luxury: product on deep dark bg, gold accents, badges at bottom
+  // 1 — Dark neon: pitch black background, product with electric blue rim light, badges in a row at bottom
   (name, _mp, features, price) =>
-    `Luxury dark premium product card. Square 1:1 format. ` +
-    `Deep dark background — near-black with subtle deep blue gradient. ` +
-    `Product "${name}" dramatically lit with golden rim light, floating centered. ` +
-    `3 gold circular badges in a row at bottom with icons and Russian text labels: ` +
-    `"${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Надёжность")}", "${feat(features, 2, "Гарантия")}". ` +
-    `Bold gold Russian title "${name}" at top center. Price "${price} руб." gold text bottom right. ` +
-    `High-end luxury brand aesthetic, dramatic cinematic lighting.`,
+    `Professional marketplace infographic card. Square 1:1. ` +
+    `BACKGROUND: pitch black, pure dark with very subtle deep navy gradient. ` +
+    `CENTER: product "${name}" floating in the middle with dramatic electric blue rim lighting, sharp edges glowing cyan/blue, studio lighting effect. ` +
+    `BADGES: exactly 3 rectangular dark-glass pill badges with blue glowing border arranged in a HORIZONTAL ROW at the bottom — ` +
+    `pill 1: "${feat(features, 0, "Качество")}", pill 2: "${feat(features, 1, "Материал")}", pill 3: "${feat(features, 2, "Размер")}". ` +
+    `TITLE: bold white Russian text "${name}" at very top with subtle blue glow. ` +
+    `PRICE: "${price} руб." in large bold electric blue font at bottom right. ` +
+    `Style: tech luxury, dark mode, neon blue accents, no gold.`,
 
-  // 2 — Infographic split: product left, features right, white/light bg
+  // 2 — White clean split: pure white left half product, right half text list
   (name, mp, features, price) =>
-    `Professional product infographic banner for ${mp}. Square 1:1 format, white/light blue background. ` +
-    `LEFT HALF: large product "${name}" photo with soft white glow halo. ` +
-    `RIGHT HALF: clean white panel with: bold Russian product title at top, ` +
-    `feature list: "✓ ${feat(features, 0, "Высокое качество")}", "✓ ${feat(features, 1, "Премиум материал")}", "✓ ${feat(features, 2, "Удобное применение")}", "★★★★★ Топ продаж". ` +
-    `Price "${price} руб." large bold at bottom right. ` +
-    `Modern clean flat design, blue and white color scheme, professional marketplace card.`,
+    `Professional marketplace infographic card for ${mp}. Square 1:1. ` +
+    `BACKGROUND: pure clean white. ` +
+    `LAYOUT: vertical split — LEFT half has the product "${name}" photo large with minimal soft shadow on white. ` +
+    `RIGHT half has a light blue (#EBF4FF) panel with: ` +
+    `product Russian title "${name}" in bold dark navy at top, ` +
+    `then a vertical list of 3 features each on its own row with a blue checkmark icon: ` +
+    `"${feat(features, 0, "Качество")}", "${feat(features, 1, "Материал")}", "${feat(features, 2, "Размер")}", ` +
+    `then "★★★★★ Топ продаж" in gold stars. ` +
+    `PRICE: "${price} руб." large bold dark blue at bottom of right panel. ` +
+    `Style: clean minimal modern, white and blue, corporate professional.`,
 
-  // 3 — Lifestyle: product in real-world elegant setting, minimal text
-  (name, _mp, features, _price) =>
-    `Lifestyle commercial photography of product "${name}". Square format. ` +
-    `Beautiful real-world setting matching product category — marble counter, elegant interior, or natural outdoor scene. ` +
-    `Warm cinematic lighting, golden bokeh background, shallow depth of field. ` +
-    `Product prominently featured, magazine quality. ` +
-    `Minimal overlay: 3 small feature badges with Russian labels: ` +
-    `"${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Премиум")}", "${feat(features, 2, "Оригинал")}". ` +
-    `Aspirational luxury feel, professional editorial photography.`,
+  // 3 — Vibrant lifestyle: deep purple/wine gradient, product hero, icons below in colored circles
+  (name, _mp, features, price) =>
+    `Professional marketplace infographic card. Square 1:1. ` +
+    `BACKGROUND: deep rich purple to burgundy wine gradient (#4A0080 to #8B0000). ` +
+    `CENTER: product "${name}" large and prominent, floating center-upper area with soft white glow halo and realistic shadow below. ` +
+    `BADGES: exactly 3 small round white circles with a colored icon inside, arranged in a HORIZONTAL ROW at the bottom, each with Russian label underneath in white: ` +
+    `circle 1 "${feat(features, 0, "Качество")}", circle 2 "${feat(features, 1, "Материал")}", circle 3 "${feat(features, 2, "Размер")}". ` +
+    `TITLE: bold white Russian text "${name}" at top center, large readable font. ` +
+    `PRICE: "${price} руб." in large bold white font with golden underline at very bottom. ` +
+    `Style: bold vibrant premium, purple-wine palette, white text, no gold background.`,
 ];
 
 async function pollKieTask(taskId: string, timeoutMs = 180_000): Promise<string | null> {
