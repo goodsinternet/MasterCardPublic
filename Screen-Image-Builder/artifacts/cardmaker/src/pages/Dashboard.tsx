@@ -228,7 +228,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-[16px] font-semibold text-white/90">Карточки создані</p>
+                  <p className="text-[16px] font-semibold text-white/90">Создано карточек</p>
                   <p className="text-[13px] text-white/40 mt-0.5 leading-relaxed">
                     Вы создали <span className="text-[#30d158] font-semibold">{generations.length}</span> карточку товара
                     {generations.length >= 20 && " — уже 20+!"}
