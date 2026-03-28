@@ -164,42 +164,53 @@ function feat(features: string[], i: number, fallback: string): string {
   return features[i]?.trim() || fallback;
 }
 
+// Odd-indexed variants = infographic cards with Russian text overlays
+// Even-indexed variants = clean lifestyle product photos (no text)
 const INFOGRAPHIC_VARIANTS: VariantFn[] = [
+  // 0 — LIFESTYLE: warm cozy indoor scene, no text
+  (name, _mp, _features) =>
+    `Premium product lifestyle photography, square format. Product: ${name}. ` +
+    `Scene: product placed on a wooden table or shelf in a bright cozy interior. ` +
+    `Complementary props nearby: ceramic mug, open book, small plant. Soft warm natural window light, shallow depth of field. ` +
+    `NO text, NO labels, NO logos, NO overlay graphics. ` +
+    `Studio-quality, photorealistic, ultra high resolution.`,
+
+  // 1 — INFOGRAPHIC: bold title top + lifestyle background + 3 feature badges bottom
   (name, mp, features) =>
-    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
-    `LAYOUT — top section: large bold Russian headline text "${name}" on semi-transparent dark rounded rectangle. ` +
-    `Center: product photo large and prominent, natural lifestyle background (outdoor scene matching the product category, golden hour light). ` +
-    `Bottom: 3 feature badge boxes with small icons and bold Russian labels: box1="${feat(features, 0, "Высокое качество")}", box2="${feat(features, 1, "Надёжный материал")}", box3="${feat(features, 2, "Удобное использование")}". ` +
+    `Square product card for ${mp} Russian marketplace. Style: professional Wildberries listing card. ` +
+    `LAYOUT — top: large bold Russian headline "${name}" on white semi-transparent strip (black text). ` +
+    `Center/background: product in a natural lifestyle scene matching the product category, bright daylight. ` +
+    `Bottom row: 3 rounded badge boxes each with a thin line icon and short bold Russian label: ` +
+    `"${feat(features, 0, "Высокое качество")}" | "${feat(features, 1, "Надёжный материал")}" | "${feat(features, 2, "Удобное применение")}". ` +
     `Clean modern design, photorealistic, high resolution.`,
 
-  (name, mp, features) =>
-    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
-    `LAYOUT — top: bold black uppercase Russian title "${name}" on white or light background strip. ` +
-    `Center: product in use in natural lifestyle scene (real-world environment, bright daylight). ` +
-    `Bottom row: 3 icon+text feature blocks with thin line icons and Russian captions: "${feat(features, 0, "Высокое качество")}", "${feat(features, 1, "Надёжный материал")}", "${feat(features, 2, "Удобное применение")}". ` +
-    `Clean typography, vivid colors, photorealistic, high resolution.`,
+  // 2 — LIFESTYLE: clean minimal surface, soft gradient background, no text
+  (name, _mp, _features) =>
+    `Premium product lifestyle photography, square format. Product: ${name}. ` +
+    `Scene: product resting on soft fabric or light textured surface (linen, marble, or concrete). ` +
+    `Background: blurred, soft neutral tones — warm beige, white, or sand gradient. ` +
+    `A laptop or minimalist wooden object partially visible in background. Soft diffused studio lighting. ` +
+    `NO text, NO labels, NO logos, NO overlay graphics. ` +
+    `Studio-quality, photorealistic, ultra high resolution.`,
 
+  // 3 — INFOGRAPHIC: full-bleed lifestyle photo + title top-left + vertical feature list bottom-right
   (name, mp, features) =>
-    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
-    `LAYOUT — top left: product title "${name}" in large bold Russian font, white text on dark overlay. ` +
-    `Full bleed: dynamic lifestyle action photo background (product category environment). ` +
-    `Right side or bottom: vertical list of 3 features with small icons: "✓ ${feat(features, 0, "Высокое качество")}", "✓ ${feat(features, 1, "Надёжный материал")}", "✓ ${feat(features, 2, "Удобное применение")}". ` +
-    `Bold, energetic, photorealistic, high resolution.`,
+    `Square product card for ${mp} Russian marketplace. Style: professional Ozon listing card. ` +
+    `LAYOUT — full-bleed lifestyle photo background matching product category (outdoor or cozy interior). ` +
+    `Top-left overlay: bold Russian title "${name}" in large white text with dark shadow. ` +
+    `Rating row below title: "★★★★★ 4.9 (578 отзывов)" in yellow/white. ` +
+    `Bottom-right: vertical list of 3 features with thin icons: ` +
+    `"— ${feat(features, 0, "Высокое качество")}", "— ${feat(features, 1, "Надёжный материал")}", "— ${feat(features, 2, "Удобное применение")}". ` +
+    `Premium feel, photorealistic, high resolution.`,
 
-  (name, mp, features) =>
-    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
-    `LAYOUT — gradient background (matching product colors), product hero image large in center. ` +
-    `Top: Russian product name "${name}" in bold. ` +
-    `2 feature callout boxes on left side with icons: "${feat(features, 0, "Высокое качество")}" and "${feat(features, 1, "Надёжный материал")}". ` +
-    `1 callout on right: "${feat(features, 2, "Удобное применение")}". ` +
-    `Arrows pointing to product parts. Clean infographic style, photorealistic product, high resolution.`,
-
-  (name, mp, features) =>
-    `Square product card image for ${mp} Russian marketplace. Style: professional Wildberries/Ozon listing card. ` +
-    `LAYOUT — top left: Russian title "${name}", rating row "★★★★★ 4.9 (578 отзывов)". ` +
-    `Background: beautiful lifestyle outdoor scene matching product category. ` +
-    `Bottom: 3 feature rows with small icons: "— ${feat(features, 0, "Высокое качество")}", "— ${feat(features, 1, "Надёжный материал")}", "— ${feat(features, 2, "Удобное применение")}". ` +
-    `Premium feel, marketplace-ready, photorealistic, high resolution.`,
+  // 4 — LIFESTYLE: premium studio pedestal/surface, dramatic atmospheric background, no text
+  (name, _mp, _features) =>
+    `Premium product lifestyle photography, square format. Product: ${name}. ` +
+    `Scene: product placed on a minimalist concrete or stone pedestal. ` +
+    `Background: dreamy atmospheric scene matching product mood — soft sand dunes, misty forest, or blurred park. ` +
+    `Dramatic soft lighting with long shadows, premium feel. ` +
+    `NO text, NO labels, NO logos, NO overlay graphics. ` +
+    `Studio-quality, photorealistic, ultra high resolution.`,
 ];
 
 const KIE_AI_BASE = "https://api.kie.ai/api/v1";
