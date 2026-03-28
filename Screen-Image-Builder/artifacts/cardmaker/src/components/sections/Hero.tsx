@@ -15,9 +15,6 @@ export function Hero() {
         {/* Ray 2 */}
         <div className="ray-2 absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-[85vh] origin-top"
           style={{ background: "linear-gradient(to bottom, rgba(100,180,255,0.7) 0%, rgba(100,180,255,0) 100%)", transform: "translateX(-50%) rotate(-14deg)", transformOrigin: "top center" }} />
-        {/* Ray 3 — center */}
-        <div className="ray absolute top-0 left-1/2 -translate-x-1/2 w-[4px] h-[95vh] origin-top"
-          style={{ background: "linear-gradient(to bottom, rgba(120,200,255,0.8) 0%, rgba(120,200,255,0) 100%)", transform: "translateX(-50%) rotate(0deg)", transformOrigin: "top center" }} />
         {/* Ray 4 */}
         <div className="ray-3 absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-[80vh] origin-top"
           style={{ background: "linear-gradient(to bottom, rgba(77,159,255,0.6) 0%, rgba(77,159,255,0) 100%)", transform: "translateX(-50%) rotate(14deg)", transformOrigin: "top center" }} />
@@ -59,7 +56,7 @@ export function Hero() {
             для <span className="text-white/80">Wildberries, Ozon</span> и <span className="text-white/80">Яндекс.Маркет</span>.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
             <Link href="/generator">
               <button className="px-8 py-3.5 rounded-full bg-[#4d9fff] text-white text-[17px] font-semibold hover:bg-[#6aaeff] transition-all glow-blue shadow-[0_0_40px_rgba(77,159,255,0.4)]">
                 Попробовать бесплатно
