@@ -1,0 +1,289 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: CardMaker API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: generate
+    description: Card generation
+  - name: user
+    description: User operations
+  - name: referral
+    description: Referral program
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "200":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /user:
+    get:
+      operationId: getUser
+      tags: [user]
+      summary: Get current user data
+      responses:
+        "200":
+          description: User data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserData"
+
+  /generate:
+    post:
+      operationId: generateCard
+      tags: [generate]
+      summary: Generate product card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateBody"
+      responses:
+        "200":
+          description: Generated card
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateResult"
+
+  /generations:
+    get:
+      operationId: getGenerations
+      tags: [generate]
+      summary: Get user's generation history
+      responses:
+        "200":
+          description: List of generations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerationsList"
+
+  /referral/apply:
+    post:
+      operationId: applyReferral
+      tags: [referral]
+      summary: Apply referral code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyReferralBody"
+      responses:
+        "200":
+          description: Referral applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    RegisterBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        referralCode:
+          type: string
+      required: [email, password]
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/UserProfile"
+      required: [token, user]
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        referralCode:
+          type: string
+        bonusGenerations:
+          type: integer
+      required: [id, email, referralCode, bonusGenerations]
+
+    UserData:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        generations:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenerationItem"
+        referralCount:
+          type: integer
+      required: [user, generations, referralCount]
+
+    GenerateBody:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+        price:
+          type: string
+        marketplace:
+          type: string
+        productName:
+          type: string
+        description:
+          type: string
+      required: [imageBase64, marketplace]
+
+    GenerateResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        imageUrl:
+          type: string
+        productName:
+          type: string
+        characteristics:
+          type: string
+        category:
+          type: string
+      required: [id, description, imageUrl]
+
+    GenerationItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        outputText:
+          type: string
+        outputImageUrl:
+          type: string
+        marketplace:
+          type: string
+        price:
+          type: string
+        productName:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, status, createdAt]
+
+    GenerationsList:
+      type: object
+      properties:
+        generations:
+          type: array
+          items:
+            $ref: "#/components/schemas/GenerationItem"
+      required: [generations]
+
+    ApplyReferralBody:
+      type: object
+      properties:
+        code:
+          type: string
+      required: [code]

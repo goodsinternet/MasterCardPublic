@@ -1,0 +1,16 @@
+packages:
+  "framer-motion": "For smooth page transitions and scroll-triggered animations in the landing page"
+  "clsx": "For merging tailwind classes conditionally"
+  "tailwind-merge": "For merging tailwind classes conditionally"
+
+images:
+  - path: "artifacts/cardmaker/public/images/hero-graphic.png"
+    description: "Abstract 3D illustration of a floating modern product card with glowing purple UI elements, magical sparkles, and shopping icons around it. Clean light background, premium SaaS aesthetic, high resolution."
+    aspect_ratio: "1:1"
+  - path: "artifacts/cardmaker/public/images/mesh-bg.png"
+    description: "Very soft, elegant light purple and white abstract gradient mesh background, smooth blurry waves, high key lighting, minimal and clean"
+    aspect_ratio: "16:9"
+
+notes:
+  - This is a frontend-only landing page. 
+  - All interactive buttons have placeholder onClick handlers since there is no actual backend yet.
