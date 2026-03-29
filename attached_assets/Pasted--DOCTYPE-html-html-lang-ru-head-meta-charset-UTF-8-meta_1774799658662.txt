@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ — CardMaker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Inter', 'Roboto', sans-serif;
+            background: #F9FAFB;
+            color: #1F2937;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Заголовок */
+        .faq-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .faq-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .faq-header p {
+            color: #6B7280;
+            font-size: 1.125rem;
+        }
+
+        /* Категория */
+        .category {
+            margin-bottom: 2rem;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1E3A8A;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #C9A03D;
+        }
+
+        .category-title span {
+            font-size: 1.8rem;
+        }
+
+        /* Аккордеон */
+        .accordion-item {
+            background: white;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #E5E7EB;
+            transition: all 0.2s ease;
+        }
+
+        .accordion-item:hover {
+            border-color: #C9A03D;
+            box-shadow: 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        .accordion-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1F2937;
+            background: white;
+            border-radius: 1rem;
+            transition: background 0.2s;
+        }
+
+        .accordion-question:hover {
+            background: #FEFCE8;
+        }
+
+        .accordion-question .icon {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+            color: #C9A03D;
+        }
+
+        .accordion-item.active .accordion-question .icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            padding: 0 1.5rem;
+            color: #4B5563;
+            line-height: 1.6;
+            border-top: 0px solid #E5E7EB;
+        }
+
+        .accordion-item.active .accordion-answer {
+            max-height: 600px; /* достаточно для длинного ответа */
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-top-width: 1px;
+        }
+
+        .accordion-answer p {
+            margin-bottom: 0.75rem;
+        }
+
+        .accordion-answer strong {
+            color: #1E3A8A;
+        }
+
+        .tip {
+            background: #FEF3C7;
+            border-left: 4px solid #C9A03D;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            background: #C9A03D10;
+            color: #C9A03D;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            margin-left: 0.75rem;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 640px) {
+            .faq-header h1 { font-size: 1.8rem; }
+            .category-title { font-size: 1.25rem; }
+            .accordion-question { padding: 1rem; font-size: 0.95rem; }
+            .accordion-answer { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="faq-header">
+        <h1>❓ Часто задаваемые вопросы</h1>
+        <p>Всё о генерации карточек, бонусах и партнёрской программе</p>
+    </div>
+
+    <!-- КАТЕГОРИЯ 2: ГЕНЕРАЦИЯ КАРТОЧЕК -->
+    <div class="category">
+        <div class="category-title">
+            <span>🎨</span> Генерация карточек
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Сколько времени занимает создание одной карточки?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p><strong>30–60 секунд.</strong> Это в 20–30 раз быстрее, чем нанимать дизайнера или пытаться сделать карточку самому в Photoshop. Вы загружаете фото, указываете цену, выбираете маркетплейс — AI делает всё остальное.</p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Какие форматы фото можно загружать?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p>Мы поддерживаем форматы <strong>JPEG</strong> и <strong>PNG</strong>. Максимальный размер одного файла — <strong>10 МБ</strong>. Вы можете загрузить до 5 фотографий одного товара, чтобы AI лучше распознал детали.</p>
+                <div class="tip">💡 <strong>Совет:</strong> Чем лучше качество исходного фото (чёткое, товар в центре, без посторонних предметов), тем качественнее получится итоговая карточка.</div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Сколько вариантов карточки я получу?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p>Сервис генерирует <strong>до 5 вариантов инфографики</strong> для одного товара. Вы можете:</p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>Выбрать лучший вариант и использовать его</li>
+                    <li>Скачать все варианты и протестировать, какой лучше конвертирует</li>
+                    <li>Сгенерировать ещё раз с изменёнными параметрами (ценой, описанием)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Могу ли я редактировать карточку после генерации?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p>Прямого редактирования уже созданной карточки пока нет. Но вы можете:</p>
+                <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>Изменить исходные данные (название, цену, описание, характеристики)</li>
+                    <li>Нажать «Создать карточку» заново</li>
+                    <li>AI сгенерирует новый вариант с учётом ваших правок</li>
+                </ol>
+                <p style="margin-top: 0.75rem;">В будущем мы добавим возможность редактировать текст прямо на карточке.</p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Что такое инфографика и почему она важна?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p><strong>Инфографика</strong> — это визуальные элементы на карточке: иконки, бейджи, ценники, выделенные характеристики. Она помогает покупателю за 3 секунды понять главные преимущества товара, не читая длинное описание.</p>
+                <div class="tip">📊 Карточки с хорошей инфографикой получают <strong>на 30–40% больше кликов</strong>.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- КАТЕГОРИЯ 3: БЕСПЛАТНЫЕ И БОНУСНЫЕ ГЕНЕРАЦИИ -->
+    <div class="category">
+        <div class="category-title">
+            <span>🎁</span> Бесплатные и бонусные генерации
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Сколько генераций я получаю при регистрации?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p>Каждый новый пользователь получает <strong>3 бесплатные генерации</strong>. Этого достаточно, чтобы:</p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>Протестировать сервис на 1–3 товарах</li>
+                    <li>Понять качество работы AI</li>
+                    <li>Решить, подходит ли вам CardMaker</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Как получить бонусные генерации? <span class="badge">⭐ Важно</span>
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p><strong>Пригласите друга</strong> по вашей реферальной ссылке. Когда друг зарегистрируется, <strong>вы получите +3 бонусные генерации</strong>. Друг тоже получает свои 3 бесплатные генерации при регистрации.</p>
+                <p><strong>Правила:</strong></p>
+                <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li>Нет ограничений на количество приглашённых друзей</li>
+                    <li>Каждый новый друг = +3 генерации на ваш счёт</li>
+                    <li>Друг может ввести ваш реферальный код даже если перешёл не по ссылке (поле «Реферальный код» при регистрации)</li>
+                </ul>
+                <div class="tip">📍 <strong>Где взять ссылку?</strong> В личном кабинете → раздел «Партнёрская программа». Там же есть кнопка «Копировать».</div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Сколько можно накопить бонусных генераций?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p><strong>Безлимитно.</strong> Вы можете пригласить 10 друзей и получить 30 бонусных генераций, 100 друзей → 300 генераций. Единственное ограничение — каждый друг может зарегистрироваться только один раз.</p>
+                <div class="tip">💡 <strong>Совет:</strong> Поделитесь своей реферальной ссылкой в соцсетях, чатах селлеров, тематических каналах — так вы быстро накопите много генераций.</div>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                В каком порядке списываются генерации?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p>Система списывает генерации в следующем порядке:</p>
+                <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li><strong>Сначала бонусные</strong> (полученные за приглашение друзей)</li>
+                    <li><strong>Потом бесплатные</strong> (3 при регистрации)</li>
+                </ol>
+                <p>Это сделано для вашей выгоды: бонусные генерации не сгорают, а бесплатные вы используете в первую очередь? Нет — наоборот, сначала тратятся бонусные, чтобы бесплатные оставались как резерв.</p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Что делать, если генерации закончились?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p>Сейчас у вас есть два варианта:</p>
+                <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <li><strong>Пригласить друзей</strong> — получить +3 бонусные генерации за каждого нового пользователя</li>
+                    <li><strong>Дождаться запуска платных пакетов</strong> — мы готовим возможность покупать пакеты генераций (5, 10, 25 карточек). Следите за новостями в личном кабинете</li>
+                </ol>
+                <p style="margin-top: 0.75rem;">Если у вас остались вопросы — напишите в поддержку.</p>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <div class="accordion-question">
+                Могут ли бонусные генерации сгореть?
+                <span class="icon">▼</span>
+            </div>
+            <div class="accordion-answer">
+                <p><strong>Нет.</strong> Бонусные генерации, полученные за приглашение друзей, <strong>не сгорают</strong> и не имеют срока действия. Вы можете использовать их в любое время.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Аккордеон: обработка кликов
+    document.querySelectorAll('.accordion-question').forEach(question => {
+        question.addEventListener('click', () => {
+            const parent = question.closest('.accordion-item');
+            parent.classList.toggle('active');
+        });
+    });
+</script>
+</body>
+</html>

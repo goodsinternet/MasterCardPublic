@@ -24,6 +24,9 @@ export function Navbar() {
             <Link href="/dashboard" className="text-[14px] text-white/50 hover:text-white/90 transition-colors">
               Партнёрка
             </Link>
+            <Link href="/faq" className="text-[14px] text-white/50 hover:text-white/90 transition-colors">
+              FAQ
+            </Link>
             {user?.isAdmin && (
               <Link href="/admin" className="text-[14px] text-[#4d9fff]/80 hover:text-[#4d9fff] transition-colors">
                 Админ
