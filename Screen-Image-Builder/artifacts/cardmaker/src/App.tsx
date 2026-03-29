@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import FAQPage from "@/pages/FAQ";
+import PrivacyPage from "@/pages/Privacy";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/faq" component={FAQPage} />
+      <Route path="/privacy" component={PrivacyPage} />
       <Route component={NotFound} />
     </Switch>
   );
