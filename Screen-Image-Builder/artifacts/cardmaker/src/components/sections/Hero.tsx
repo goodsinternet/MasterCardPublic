@@ -30,7 +30,7 @@ export function Hero() {
             AI-генерация карточек для маркетплейсов
           </div>
 
-          <h1 className="text-[68px] sm:text-[80px] lg:text-[96px] font-bold text-white leading-[1.0] tracking-[-0.04em] mb-6">
+          <h1 className="text-[44px] sm:text-[80px] lg:text-[96px] font-bold text-white leading-[1.0] tracking-[-0.04em] mb-6">
             Карточка товара
             <br />
             <span className="text-glow">за одну минуту.</span>

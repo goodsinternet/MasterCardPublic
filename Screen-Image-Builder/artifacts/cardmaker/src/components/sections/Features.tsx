@@ -4,7 +4,7 @@ import { Zap, Image as ImageIcon, FileText, LayoutGrid } from "lucide-react";
 const features = [
   { icon: Zap,        color: "#4d9fff", title: "Быстро",           description: "Готовая карточка за 30–60 секунд. Экономьте часы на дизайнерах." },
   { icon: ImageIcon,  color: "#30d158", title: "Премиум качество", description: "Студийное освещение, профессиональная инфографика, чистая композиция." },
-  { icon: FileText,   color: "#ffd60a", title: "Продающий текст",  description: "GPT‑4o пишет SEO-описания с ключевыми словами под каждую площадку." },
+  { icon: FileText,   color: "#ffd60a", title: "Продающий текст",  description: "AI пишет SEO-описания с ключевыми словами под каждую площадку." },
   { icon: LayoutGrid, color: "#bf5af2", title: "Все площадки",     description: "Идеальные форматы под стандарты WB, Ozon и Яндекс.Маркет." },
 ];
 
