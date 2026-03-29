@@ -20,6 +20,23 @@ function yookassaAuth() {
   return `Basic ${credentials}`;
 }
 
+// GET /api/payments/check-credentials (admin diagnostic)
+router.get("/check-credentials", requireAuth as any, async (_req: AuthRequest, res) => {
+  if (!SHOP_ID || !SECRET_KEY) {
+    res.json({ ok: false, reason: "YOOKASSA_SHOP_ID или YOOKASSA_SECRET_KEY не заданы" });
+    return;
+  }
+  try {
+    const r = await fetch("https://api.yookassa.ru/v2/me", {
+      headers: { "Authorization": yookassaAuth() },
+    });
+    const body = await r.json() as any;
+    res.json({ status: r.status, shopId: SHOP_ID, shopIdLength: SHOP_ID.length, body });
+  } catch (e: any) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 // POST /api/payments/create
 router.post("/create", requireAuth as any, async (req: AuthRequest, res) => {
   try {
