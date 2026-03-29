@@ -60,9 +60,16 @@ router.post("/create", requireAuth as any, async (req: AuthRequest, res) => {
     });
 
     if (!ykRes.ok) {
-      const err = await ykRes.text();
-      console.error("YooKassa create payment error:", ykRes.status, err);
-      res.status(502).json({ error: "Ошибка создания платежа. Попробуйте позже." });
+      const errText = await ykRes.text();
+      console.error("YooKassa create payment error:", ykRes.status, errText);
+      console.error("YooKassa auth shop_id length:", SHOP_ID?.length, "secret starts with:", SECRET_KEY?.slice(0, 6));
+
+      let userMessage = "Ошибка создания платежа. Попробуйте позже.";
+      if (ykRes.status === 401) userMessage = "Ошибка авторизации ЮKassa: неверный Shop ID или секретный ключ.";
+      else if (ykRes.status === 404) userMessage = "Магазин ЮKassa не найден. Проверьте Shop ID в настройках.";
+      else if (ykRes.status === 400) userMessage = "Некорректный запрос к ЮKassa. Обратитесь к администратору.";
+
+      res.status(502).json({ error: userMessage });
       return;
     }
 
