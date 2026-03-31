@@ -22,19 +22,63 @@ function yookassaAuth() {
 
 // GET /api/payments/check-credentials (admin diagnostic)
 router.get("/check-credentials", requireAuth as any, async (_req: AuthRequest, res) => {
+  const report: Record<string, any> = {
+    shopId: SHOP_ID,
+    shopIdLength: SHOP_ID?.length,
+    secretKeyPrefix: SECRET_KEY ? SECRET_KEY.slice(0, 10) + "..." : "NOT SET",
+  };
+
   if (!SHOP_ID || !SECRET_KEY) {
-    res.json({ ok: false, reason: "YOOKASSA_SHOP_ID или YOOKASSA_SECRET_KEY не заданы" });
+    res.json({ ok: false, reason: "YOOKASSA_SHOP_ID или YOOKASSA_SECRET_KEY не заданы", report });
     return;
   }
+
+  // 1. Определяем наш исходящий IP
   try {
-    const r = await fetch("https://api.yookassa.ru/v2/me", {
-      headers: { "Authorization": yookassaAuth() },
-    });
-    const body = await r.json() as any;
-    res.json({ status: r.status, shopId: SHOP_ID, shopIdLength: SHOP_ID.length, body });
+    const ipRes = await fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(5000) });
+    const ipData = await ipRes.json() as any;
+    report.outgoingIp = ipData.ip;
   } catch (e: any) {
-    res.json({ ok: false, error: e.message });
+    report.outgoingIp = `error: ${e.message}`;
   }
+
+  // 2. Запрос БЕЗ авторизации — если 401, ЮКасса доступна; если 404, скорее IP-блок
+  try {
+    const noAuthRes = await fetch("https://api.yookassa.ru/v2/me", { signal: AbortSignal.timeout(8000) });
+    const noAuthBody = await noAuthRes.text();
+    report.noAuthStatus = noAuthRes.status;
+    report.noAuthBody = noAuthBody.slice(0, 200);
+    report.ipBlocked = noAuthRes.status === 404;
+  } catch (e: any) {
+    report.noAuthStatus = `error: ${e.message}`;
+  }
+
+  // 3. Запрос С нашими реквизитами
+  try {
+    const authRes = await fetch("https://api.yookassa.ru/v2/me", {
+      headers: { "Authorization": yookassaAuth() },
+      signal: AbortSignal.timeout(8000),
+    });
+    const authBody = await authRes.json() as any;
+    report.authStatus = authRes.status;
+    report.authBody = authBody;
+    report.shopFound = authRes.status === 200;
+  } catch (e: any) {
+    report.authStatus = `error: ${e.message}`;
+  }
+
+  // 4. Интерпретация
+  if (report.noAuthStatus === 401 || report.noAuthStatus === 403) {
+    report.diagnosis = "ЮКасса ДОСТУПНА с нашего IP. Проблема только в реквизитах (Shop ID или Secret Key).";
+  } else if (report.noAuthStatus === 404) {
+    report.diagnosis = "ЮКасса возвращает 404 даже без авторизации — вероятно IP-блокировка или неверный URL.";
+  } else if (typeof report.noAuthStatus === "string" && report.noAuthStatus.startsWith("error")) {
+    report.diagnosis = "Нет сетевого доступа к api.yookassa.ru с нашего сервера.";
+  } else {
+    report.diagnosis = `Неожиданный статус без авторизации: ${report.noAuthStatus}`;
+  }
+
+  res.json(report);
 });
 
 // POST /api/payments/create
