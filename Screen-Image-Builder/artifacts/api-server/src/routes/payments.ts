@@ -172,12 +172,39 @@ router.get("/history", requireAuth as any, async (req: AuthRequest, res) => {
   }
 });
 
+async function capturePayment(paymentId: string, amount: string): Promise<boolean> {
+  try {
+    const captureRes = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}/capture`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": yookassaAuth(),
+        "Idempotence-Key": randomUUID(),
+      },
+      body: JSON.stringify({ amount: { value: amount, currency: "RUB" } }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (captureRes.ok) {
+      const data = await captureRes.json() as any;
+      console.log(`✅ Captured payment ${paymentId}: status=${data.status}`);
+      return data.status === "succeeded";
+    }
+    console.warn(`Capture failed ${paymentId}: HTTP ${captureRes.status}`);
+    return false;
+  } catch (e: any) {
+    console.error(`Capture error ${paymentId}:`, e.message);
+    return false;
+  }
+}
+
 // Exported separately so it can be mounted at /api/yookassa-webhook
 export async function handleYookassaWebhook(req: any, res: any) {
   try {
     const event = req.body;
+    const eventType = event.event as string;
 
-    if (event.event !== "payment.succeeded") {
+    // Accept both succeeded and waiting_for_capture
+    if (eventType !== "payment.succeeded" && eventType !== "payment.waiting_for_capture") {
       res.json({ ok: true });
       return;
     }
@@ -189,8 +216,20 @@ export async function handleYookassaWebhook(req: any, res: any) {
       return;
     }
 
-    // Try to verify payment with YooKassa API for extra security.
-    // If the API is unreachable (network issues), fall back to trusting the webhook event.
+    // If waiting_for_capture — auto-capture the payment
+    if (eventType === "payment.waiting_for_capture") {
+      console.log(`Payment ${paymentId} waiting_for_capture — auto-capturing...`);
+      const amount = event.object?.amount?.value || "0";
+      const captured = await capturePayment(paymentId, amount);
+      if (!captured) {
+        // Will retry when payment.succeeded webhook arrives (or fallback below)
+        res.json({ ok: true });
+        return;
+      }
+      // Proceed to credit generations after successful capture
+    }
+
+    // Verify with YooKassa API. If unreachable, trust event body.
     if (SHOP_ID && SECRET_KEY) {
       try {
         const verifyRes = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
@@ -200,22 +239,20 @@ export async function handleYookassaWebhook(req: any, res: any) {
         if (verifyRes.ok) {
           const verifyData = await verifyRes.json() as any;
           if (verifyData.status !== "succeeded" || !verifyData.paid) {
-            console.log(`Payment ${paymentId} not succeeded per YooKassa, skipping`);
+            console.log(`Payment ${paymentId} not succeeded per YooKassa (status=${verifyData.status}), skipping`);
             res.json({ ok: true });
             return;
           }
         } else {
-          // API reachable but returned error — trust webhook event body
           console.warn(`YooKassa verify returned ${verifyRes.status}, trusting webhook event`);
         }
       } catch (verifyErr: any) {
-        // Network error — trust webhook event body, log for audit
-        console.warn(`YooKassa verify unreachable (${verifyErr.message}), trusting webhook event`);
+        console.warn(`YooKassa verify unreachable (${(verifyErr as any).message}), trusting webhook event`);
       }
     }
 
-    // Extra guard: check event status directly
-    if (event.object?.status !== "succeeded" || !event.object?.paid) {
+    // Extra guard: check event status directly (for payment.succeeded events)
+    if (eventType === "payment.succeeded" && (event.object?.status !== "succeeded" || !event.object?.paid)) {
       console.log(`Webhook event for ${paymentId} not succeeded, skipping`);
       res.json({ ok: true });
       return;
