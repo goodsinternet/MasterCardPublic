@@ -44,7 +44,7 @@ router.get("/check-credentials", requireAuth as any, async (_req: AuthRequest, r
 
   // 2. Запрос БЕЗ авторизации — если 401, ЮКасса доступна; если 404, скорее IP-блок
   try {
-    const noAuthRes = await fetch("https://api.yookassa.ru/v2/me", { signal: AbortSignal.timeout(8000) });
+    const noAuthRes = await fetch("https://api.yookassa.ru/v3/me", { signal: AbortSignal.timeout(8000) });
     const noAuthBody = await noAuthRes.text();
     report.noAuthStatus = noAuthRes.status;
     report.noAuthBody = noAuthBody.slice(0, 200);
@@ -55,7 +55,7 @@ router.get("/check-credentials", requireAuth as any, async (_req: AuthRequest, r
 
   // 3. Запрос С нашими реквизитами
   try {
-    const authRes = await fetch("https://api.yookassa.ru/v2/me", {
+    const authRes = await fetch("https://api.yookassa.ru/v3/me", {
       headers: { "Authorization": yookassaAuth() },
       signal: AbortSignal.timeout(8000),
     });
@@ -105,7 +105,7 @@ router.post("/create", requireAuth as any, async (req: AuthRequest, res) => {
 
     const idempotenceKey = randomUUID();
 
-    const ykRes = await fetch("https://api.yookassa.ru/v2/payments", {
+    const ykRes = await fetch("https://api.yookassa.ru/v3/payments", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -193,7 +193,7 @@ export async function handleYookassaWebhook(req: any, res: any) {
     // If the API is unreachable (network issues), fall back to trusting the webhook event.
     if (SHOP_ID && SECRET_KEY) {
       try {
-        const verifyRes = await fetch(`https://api.yookassa.ru/v2/payments/${paymentId}`, {
+        const verifyRes = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
           headers: { "Authorization": yookassaAuth() },
           signal: AbortSignal.timeout(5000),
         });
