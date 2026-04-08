@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { requireAuth, type AuthRequest } from "../middlewares/requireAuth.js";
+import { requireAuth } from "../middlewares/requireAuth.js";
+import sharp from "sharp";
 
 const router = Router();
 
@@ -14,9 +15,13 @@ router.post("/", requireAuth, async (req, res) => {
   try {
     const { removeBackground } = await import("@imgly/background-removal-node");
 
-    const inputBuffer = Buffer.from(imageBase64, "base64");
+    const rawBuffer = Buffer.from(imageBase64, "base64");
 
-    const resultBlob = await removeBackground(inputBuffer, {
+    // Normalize to PNG via sharp so the library always gets a known format
+    const pngBuffer = await sharp(rawBuffer).png().toBuffer();
+    const pngBlob = new Blob([pngBuffer], { type: "image/png" });
+
+    const resultBlob = await removeBackground(pngBlob, {
       model: "small",
       output: { format: "image/png" },
     } as any);
