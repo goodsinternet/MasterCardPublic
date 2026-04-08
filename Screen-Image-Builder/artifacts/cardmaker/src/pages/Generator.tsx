@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Upload, ImageIcon, X, Download, Loader2, ChevronLeft, ChevronRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Upload, ImageIcon, X, Download, Loader2, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Eraser, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { api, isLoggedIn, type GenerateResult } from "@/lib/api";
@@ -65,13 +65,73 @@ export default function Generator() {
   const [, navigate] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Background removal state
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [originalBase64, setOriginalBase64] = useState<string>("");
+  const [noBgImage, setNoBgImage] = useState<string | null>(null);
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [bgError, setBgError] = useState("");
+  const [bgApplied, setBgApplied] = useState(false);
+
+  async function handleRemoveBg() {
+    if (!uploadedImage || !imageBase64) return;
+    setIsRemovingBg(true);
+    setBgError("");
+    // Save original before processing
+    const origUrl = uploadedImage;
+    const origB64 = imageBase64;
+    try {
+      const { removeBackground } = await import("@imgly/background-removal");
+      const blob = await removeBackground(uploadedImage, {
+        publicPath: "https://unpkg.com/@imgly/background-removal@1.4.5/dist/",
+        model: "small",
+      });
+      const url = URL.createObjectURL(blob);
+      setNoBgImage(url);
+      setOriginalImage(origUrl);
+      setOriginalBase64(origB64);
+      setBgApplied(true);
+      // Update active image and base64 for generation
+      setUploadedImage(url);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const dataUrl = e.target?.result as string;
+        setImageBase64(dataUrl.split(",")[1] ?? "");
+      };
+      reader.readAsDataURL(blob);
+    } catch (e: any) {
+      console.error("Background removal error:", e);
+      setBgError("Не удалось удалить фон. Попробуйте другое фото.");
+    } finally {
+      setIsRemovingBg(false);
+    }
+  }
+
+  function handleResetBg() {
+    if (!originalImage) return;
+    setUploadedImage(originalImage);
+    setImageBase64(originalBase64);
+    setNoBgImage(null);
+    setOriginalImage(null);
+    setOriginalBase64("");
+    setBgApplied(false);
+    setBgError("");
+  }
+
   useEffect(() => { if (!isLoggedIn()) navigate("/auth"); }, []);
 
   const handleFile = (file: File) => {
     if (!file.type.startsWith("image/")) return;
-    setUploadedImage(URL.createObjectURL(file));
+    const url = URL.createObjectURL(file);
+    setUploadedImage(url);
     setResult(null);
     setError("");
+    // Reset background removal state
+    setNoBgImage(null);
+    setOriginalImage(null);
+    setOriginalBase64("");
+    setBgApplied(false);
+    setBgError("");
     const reader = new FileReader();
     reader.onload = e => setImageBase64((e.target?.result as string).split(",")[1] ?? "");
     reader.readAsDataURL(file);
@@ -155,11 +215,83 @@ export default function Generator() {
                   <h2 className="text-[15px] font-semibold text-white/90 mb-4">Фото товара</h2>
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
                   {uploadedImage ? (
-                    <div className="relative rounded-2xl overflow-hidden bg-white/[0.04] aspect-video flex items-center justify-center">
-                      <img src={uploadedImage} alt="" className="max-h-52 max-w-full object-contain" />
-                      <button onClick={() => { setUploadedImage(null); setImageBase64(""); setResult(null); }} className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors">
-                        <X className="w-3.5 h-3.5 text-white" />
-                      </button>
+                    <div className="flex flex-col gap-3">
+                      {/* Preview with checkerboard for transparency */}
+                      <div
+                        className="relative rounded-2xl overflow-hidden aspect-video flex items-center justify-center"
+                        style={{
+                          background: bgApplied
+                            ? "repeating-conic-gradient(#1a1a2e 0% 25%, #0d0d1a 0% 50%) 0 0 / 20px 20px"
+                            : "rgba(255,255,255,0.04)",
+                        }}
+                      >
+                        <img src={uploadedImage} alt="" className="max-h-52 max-w-full object-contain" />
+                        <button
+                          onClick={() => {
+                            setUploadedImage(null);
+                            setImageBase64("");
+                            setResult(null);
+                            setNoBgImage(null);
+                            setOriginalImage(null);
+                            setOriginalBase64("");
+                            setBgApplied(false);
+                            setBgError("");
+                          }}
+                          className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5 text-white" />
+                        </button>
+                        {bgApplied && (
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#30d158]/20 border border-[#30d158]/30">
+                            <CheckCircle2 className="w-3 h-3 text-[#30d158]" />
+                            <span className="text-[11px] font-semibold text-[#30d158]">Фон удалён</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* BG removal controls */}
+                      <div className="flex gap-2">
+                        {!bgApplied ? (
+                          <button
+                            onClick={handleRemoveBg}
+                            disabled={isRemovingBg}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[14px] font-medium border transition-all",
+                              isRemovingBg
+                                ? "border-white/10 text-white/30 bg-white/[0.03] cursor-not-allowed"
+                                : "border-[#bf5af2]/40 text-[#bf5af2] bg-[#bf5af2]/10 hover:bg-[#bf5af2]/20 hover:border-[#bf5af2]/60"
+                            )}
+                          >
+                            {isRemovingBg ? (
+                              <><Loader2 className="w-4 h-4 animate-spin" /> Удаляю фон…</>
+                            ) : (
+                              <><Eraser className="w-4 h-4" /> Удалить фон</>
+                            )}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleResetBg}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[14px] font-medium border border-white/10 text-white/40 hover:text-white/70 hover:bg-white/[0.05] transition-all"
+                          >
+                            <RotateCcw className="w-4 h-4" /> Вернуть оригинал
+                          </button>
+                        )}
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-4 py-2.5 rounded-xl text-[14px] font-medium border border-white/10 text-white/40 hover:text-white/70 hover:bg-white/[0.05] transition-all"
+                        >
+                          Заменить
+                        </button>
+                      </div>
+
+                      {isRemovingBg && (
+                        <div className="bg-[#bf5af2]/10 border border-[#bf5af2]/20 rounded-xl px-4 py-2.5 text-[13px] text-[#bf5af2]/80">
+                          AI обрабатывает изображение. При первом запуске загружается модель — может занять 15–30 секунд.
+                        </div>
+                      )}
+                      {bgError && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5 text-[13px] text-red-400">{bgError}</div>
+                      )}
                     </div>
                   ) : (
                     <div
