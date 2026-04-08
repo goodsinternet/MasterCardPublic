@@ -156,6 +156,13 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      '@imgly/background-removal-node':
+        specifier: 1.4.5
+        version: 1.4.5
+      onnxruntime-node:
+        specifier: 1.17.3
+        version: 1.17.3
     devDependencies:
       prettier:
         specifier: ^3.8.1

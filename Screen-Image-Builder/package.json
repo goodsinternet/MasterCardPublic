@@ -10,10 +10,18 @@
   },
   "private": true,
   "pnpm": {
-    "onlyBuiltDependencies": ["onnxruntime-node", "protobufjs", "sharp"]
+    "onlyBuiltDependencies": [
+      "onnxruntime-node",
+      "protobufjs",
+      "sharp"
+    ]
   },
   "devDependencies": {
-    "typescript": "~5.9.2",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "typescript": "~5.9.2"
+  },
+  "dependencies": {
+    "@imgly/background-removal-node": "1.4.5",
+    "onnxruntime-node": "1.17.3"
   }
 }
