@@ -7,6 +7,7 @@ import referralRouter from "./referral.js";
 import tmpImagesRouter from "./tmpImages.js";
 import adminRouter from "./admin.js";
 import paymentsRouter, { handleYookassaWebhook } from "./payments.js";
+import removeBgRouter from "./removeBg.js";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use("/tmp", tmpImagesRouter);
 router.use("/admin", adminRouter);
 router.use("/payments", paymentsRouter);
 router.post("/yookassa-webhook", handleYookassaWebhook);
+router.use("/remove-bg", removeBgRouter);
 
 export default router;

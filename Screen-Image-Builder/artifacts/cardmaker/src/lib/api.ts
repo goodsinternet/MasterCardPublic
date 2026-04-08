@@ -133,6 +133,11 @@ export const api = {
     history: () =>
       request<{ payments: PaymentItem[] }>("/payments/history"),
   },
+  removeBg: (imageBase64: string) =>
+    request<{ imageBase64: string; mimeType: string }>("/remove-bg", {
+      method: "POST",
+      body: JSON.stringify({ imageBase64 }),
+    }),
   admin: {
     stats: () =>
       request<{

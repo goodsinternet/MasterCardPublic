@@ -77,31 +77,20 @@ export default function Generator() {
     if (!uploadedImage || !imageBase64) return;
     setIsRemovingBg(true);
     setBgError("");
-    // Save original before processing
     const origUrl = uploadedImage;
     const origB64 = imageBase64;
     try {
-      const { removeBackground } = await import("@imgly/background-removal");
-      const blob = await removeBackground(uploadedImage, {
-        publicPath: "https://unpkg.com/@imgly/background-removal@1.4.5/dist/",
-        model: "small",
-      });
-      const url = URL.createObjectURL(blob);
-      setNoBgImage(url);
+      const { imageBase64: resultB64 } = await api.removeBg(imageBase64);
+      const dataUrl = `data:image/png;base64,${resultB64}`;
+      setNoBgImage(dataUrl);
       setOriginalImage(origUrl);
       setOriginalBase64(origB64);
       setBgApplied(true);
-      // Update active image and base64 for generation
-      setUploadedImage(url);
-      const reader = new FileReader();
-      reader.onload = e => {
-        const dataUrl = e.target?.result as string;
-        setImageBase64(dataUrl.split(",")[1] ?? "");
-      };
-      reader.readAsDataURL(blob);
+      setUploadedImage(dataUrl);
+      setImageBase64(resultB64);
     } catch (e: any) {
       console.error("Background removal error:", e);
-      setBgError("Не удалось удалить фон. Попробуйте другое фото.");
+      setBgError("Не удалось удалить фон: " + (e?.message ?? ""));
     } finally {
       setIsRemovingBg(false);
     }
@@ -286,7 +275,7 @@ export default function Generator() {
 
                       {isRemovingBg && (
                         <div className="bg-[#bf5af2]/10 border border-[#bf5af2]/20 rounded-xl px-4 py-2.5 text-[13px] text-[#bf5af2]/80">
-                          AI обрабатывает изображение. При первом запуске загружается модель — может занять 15–30 секунд.
+                          AI обрабатывает изображение — обычно занимает 5–15 секунд.
                         </div>
                       )}
                       {bgError && (
