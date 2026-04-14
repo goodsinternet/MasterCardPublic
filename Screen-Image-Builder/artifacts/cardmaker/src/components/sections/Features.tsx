@@ -10,7 +10,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-32 bg-[#080810] relative overflow-hidden">
+    <section className="py-16 md:py-32 bg-[#080810] relative overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-[radial-gradient(ellipse,_rgba(30,70,200,0.12)_0%,_transparent_70%)]" />
@@ -25,8 +25,8 @@ export function Features() {
           className="text-center mb-16"
         >
           <p className="text-[13px] font-semibold text-[#4d9fff] mb-4 uppercase tracking-[0.12em]">Возможности</p>
-          <h2 className="text-[48px] font-bold text-white tracking-[-0.03em] leading-[1.08]">Почему CardMaker?</h2>
-          <p className="text-[19px] text-white/40 mt-4 max-w-xl mx-auto">
+          <h2 className="text-[32px] sm:text-[40px] md:text-[48px] font-bold text-white tracking-[-0.03em] leading-[1.08]">Почему CardMaker?</h2>
+          <p className="text-[16px] sm:text-[19px] text-white/40 mt-4 max-w-xl mx-auto">
             Нейросеть обучена на миллионах топовых карточек маркетплейсов.
           </p>
         </motion.div>

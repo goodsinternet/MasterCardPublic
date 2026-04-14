@@ -3,7 +3,7 @@ import { Link } from "wouter";
 
 export function CTA() {
   return (
-    <section className="py-32 bg-[#080810] relative overflow-hidden">
+    <section className="py-16 md:py-32 bg-[#080810] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[400px] rounded-full bg-[radial-gradient(ellipse,_rgba(50,120,255,0.18)_0%,_transparent_65%)]" />
@@ -17,11 +17,11 @@ export function CTA() {
           transition={{ duration: 0.8 }}
         >
           <p className="text-[13px] font-semibold text-[#4d9fff] mb-5 uppercase tracking-[0.12em]">Начать бесплатно</p>
-          <h2 className="text-[52px] font-bold text-white tracking-[-0.035em] leading-[1.06] mb-5">
+          <h2 className="text-[30px] sm:text-[44px] md:text-[52px] font-bold text-white tracking-[-0.035em] leading-[1.06] mb-5">
             Создайте первую карточку
             <br /><span className="text-glow">прямо сейчас.</span>
           </h2>
-          <p className="text-[19px] text-white/45 mb-12 max-w-xl mx-auto">
+          <p className="text-[15px] sm:text-[19px] text-white/45 mb-10 sm:mb-12 max-w-xl mx-auto">
             3 бесплатные генерации при регистрации. Привязка карты не нужна.
           </p>
 
@@ -38,15 +38,15 @@ export function CTA() {
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-12">
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
             {[
               { val: "< 60с", label: "Время генерации" },
               { val: "5",     label: "Вариантов карточки" },
               { val: "3",     label: "Маркетплейса" },
             ].map(s => (
               <div key={s.label} className="text-center">
-                <p className="text-[32px] font-bold text-white tracking-[-0.03em]">{s.val}</p>
-                <p className="text-[13px] text-white/35 mt-1">{s.label}</p>
+                <p className="text-[28px] sm:text-[32px] font-bold text-white tracking-[-0.03em]">{s.val}</p>
+                <p className="text-[12px] sm:text-[13px] text-white/35 mt-1">{s.label}</p>
               </div>
             ))}
           </div>

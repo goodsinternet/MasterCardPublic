@@ -30,13 +30,13 @@ export function Hero() {
             AI-генерация карточек для маркетплейсов
           </div>
 
-          <h1 className="text-[44px] sm:text-[80px] lg:text-[96px] font-bold text-white leading-[1.0] tracking-[-0.04em] mb-6">
+          <h1 className="text-[36px] sm:text-[72px] lg:text-[96px] font-bold text-white leading-[1.0] tracking-[-0.04em] mb-6">
             Карточка товара
             <br />
             <span className="text-glow">за одну минуту.</span>
           </h1>
 
-          <p className="text-[19px] text-white/50 max-w-[560px] mx-auto leading-relaxed mb-12">
+          <p className="text-[16px] sm:text-[19px] text-white/50 max-w-[560px] mx-auto leading-relaxed mb-10 sm:mb-12">
             Загрузите фото — получите готовую карточку с инфографикой
             для <span className="text-white/80">Wildberries, Ozon</span> и <span className="text-white/80">Яндекс.Маркет</span>.
           </p>

@@ -34,7 +34,7 @@ export function Navbar() {
             )}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <Link href="/dashboard">
                 <button className="text-[14px] font-medium text-white/60 hover:text-white/90 transition-colors">Кабинет</button>
@@ -45,8 +45,8 @@ export function Navbar() {
               </Link>
             )}
             <Link href="/generator">
-              <button className="px-4 py-1.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium hover:bg-[#6aaeff] transition-colors glow-blue">
-                Создать карточку
+              <button className="px-3 sm:px-4 py-1.5 rounded-full bg-[#4d9fff] text-white text-[14px] font-medium hover:bg-[#6aaeff] transition-colors glow-blue whitespace-nowrap">
+                Создать<span className="hidden sm:inline"> карточку</span>
               </button>
             </Link>
           </div>

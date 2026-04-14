@@ -9,7 +9,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-32 bg-[#060609] relative overflow-hidden">
+    <section className="py-16 md:py-32 bg-[#060609] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
@@ -25,8 +25,8 @@ export function HowItWorks() {
           className="text-center mb-16"
         >
           <p className="text-[13px] font-semibold text-[#4d9fff] mb-4 uppercase tracking-[0.12em]">Процесс</p>
-          <h2 className="text-[48px] font-bold text-white tracking-[-0.03em] leading-[1.08]">Три шага до результата.</h2>
-          <p className="text-[19px] text-white/40 mt-4 max-w-xl mx-auto">Никаких дизайнеров. Никаких шаблонов. Только ваше фото и AI.</p>
+          <h2 className="text-[28px] sm:text-[40px] md:text-[48px] font-bold text-white tracking-[-0.03em] leading-[1.08]">Три шага до результата.</h2>
+          <p className="text-[15px] sm:text-[19px] text-white/40 mt-4 max-w-xl mx-auto">Никаких дизайнеров. Никаких шаблонов. Только ваше фото и AI.</p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-5">
