@@ -125,9 +125,9 @@ export default function Admin() {
   const maxRef = topReferrers[0]?.referralCount ?? 1;
 
   return (
-    <div className="min-h-screen bg-[#080810] flex">
-      {/* Sidebar */}
-      <aside className="w-64 shrink-0 glass-nav border-r border-white/[0.07] flex flex-col sticky top-0 h-screen">
+    <div className="min-h-screen bg-[#080810] md:flex">
+      {/* Sidebar — desktop only */}
+      <aside className="hidden md:flex w-64 shrink-0 glass-nav border-r border-white/[0.07] flex-col sticky top-0 h-screen">
         <div className="px-5 py-5 border-b border-white/[0.07]">
           <div className="flex items-center gap-2.5 mb-1">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4d9fff] to-[#1a6fdf] flex items-center justify-center">
@@ -182,7 +182,52 @@ export default function Admin() {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 p-8">
+      <main className="flex-1 min-w-0">
+        {/* Mobile nav — hidden on desktop */}
+        <div className="md:hidden glass-nav border-b border-white/[0.07] sticky top-0 z-40">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#4d9fff] to-[#1a6fdf] flex items-center justify-center">
+                <Shield className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="font-semibold text-[14px] text-white/90">Админ панель</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => loadAll(true)} disabled={refreshing} className="p-1.5 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-all">
+                <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+              </button>
+              <Link href="/dashboard">
+                <button className="p-1.5 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-all">
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              </Link>
+            </div>
+          </div>
+          <div className="flex overflow-x-auto px-3 pb-2 gap-1 scrollbar-none">
+            {navItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => setSection(item.id)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-medium whitespace-nowrap transition-all shrink-0",
+                  section === item.id
+                    ? "bg-[#4d9fff]/15 text-[#4d9fff]"
+                    : "text-white/45 hover:text-white/70 hover:bg-white/[0.05]"
+                )}
+              >
+                {item.icon}
+                {item.label}
+                {item.count !== undefined && (
+                  <span className={cn("text-[11px] px-1.5 py-0.5 rounded-md ml-0.5", section === item.id ? "bg-[#4d9fff]/20 text-[#4d9fff]" : "bg-white/[0.07] text-white/35")}>
+                    {item.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4 md:p-8">
         {dataLoading ? (
           <div className="flex items-center justify-center h-64"><Loader2 className="w-8 h-8 animate-spin text-[#4d9fff]" /></div>
         ) : (
@@ -277,7 +322,8 @@ export default function Admin() {
                   <p className="text-[14px] text-white/35 mt-1">Все зарегистрированные аккаунты</p>
                 </div>
                 <div className="glass rounded-3xl overflow-hidden">
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[700px]">
                     <thead>
                       <tr className="border-b border-white/[0.07] text-white/35 text-[11px] uppercase tracking-wider">
                         {["ID", "Email", "Роль", "Своб.", "Бонус", "Карточек", "Рефералов", "Код", "Регистрация", "Действия"].map(h => (
@@ -326,6 +372,7 @@ export default function Admin() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -338,7 +385,8 @@ export default function Admin() {
                   <p className="text-[14px] text-white/35 mt-1">Последние {generations.length} генераций</p>
                 </div>
                 <div className="glass rounded-3xl overflow-hidden">
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[550px]">
                     <thead>
                       <tr className="border-b border-white/[0.07] text-white/35 text-[11px] uppercase tracking-wider">
                         {["ID", "User ID", "Маркетплейс", "Товар", "Цена", "Статус", "Дата"].map(h => (
@@ -368,6 +416,7 @@ export default function Admin() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -381,7 +430,7 @@ export default function Admin() {
                 </div>
 
                 {stats && (
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <StatCard icon={<GitBranch className="w-5 h-5" />} label="Всего рефералов" value={stats.totalReferrals} color="#bf5af2" />
                     <StatCard icon={<Users className="w-5 h-5" />} label="Активных реферов" value={topReferrers.length} color="#4d9fff" />
                     <StatCard icon={<Gift className="w-5 h-5" />} label="Бонусов выдано" value={stats.totalReferrals * 3} sub="+3 за каждого" color="#ffd60a" />
@@ -392,7 +441,8 @@ export default function Admin() {
                   <div className="px-5 py-4 border-b border-white/[0.07]">
                     <h2 className="text-[15px] font-semibold text-white/90">Пользователи с рефералами</h2>
                   </div>
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto">
+                  <table className="w-full text-sm min-w-[500px]">
                     <thead>
                       <tr className="border-b border-white/[0.07] text-white/35 text-[11px] uppercase tracking-wider">
                         {["Email", "Реф. код", "Приглашено", "Получено бонусов", "Карточек сделано"].map(h => (
@@ -421,12 +471,14 @@ export default function Admin() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </div>
             )}
 
           </motion.div>
         )}
+        </div>
       </main>
     </div>
   );

@@ -122,3 +122,11 @@
 .ray { animation: ray-pulse 6s ease-in-out infinite; }
 .ray-2 { animation: ray-pulse 8s ease-in-out 1s infinite; }
 .ray-3 { animation: ray-pulse 7s ease-in-out 2s infinite; }
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
